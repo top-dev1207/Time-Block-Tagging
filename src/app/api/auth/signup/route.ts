@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create default user settings
-    await prisma.userSettings.create({
+    await prisma.user_settings.create({
       data: {
         userId: user.id,
         timezone: "UTC",

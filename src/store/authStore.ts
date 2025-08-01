@@ -6,17 +6,20 @@ interface AuthState {
   session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  hasHydrated: boolean;
   setSession: (session: Session | null) => void;
   setLoading: (loading: boolean) => void;
   clearSession: () => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       session: null,
       isLoading: true,
       isAuthenticated: false,
+      hasHydrated: false,
       
       setSession: (session) => set({ 
         session, 
@@ -31,10 +34,15 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: false,
         isLoading: false 
       }),
+      
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),
     {
       name: 'auth-storage',
       partialize: (state) => ({ session: state.session }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

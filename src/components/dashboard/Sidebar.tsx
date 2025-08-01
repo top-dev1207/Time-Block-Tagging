@@ -62,11 +62,11 @@ const sidebarItems = [
 ];
 
 function UserSection({ isCollapsed, handleLogout }: { isCollapsed: boolean; handleLogout: () => void }) {
-  const { session } = useAuthStore();
+  const { session, hasHydrated } = useAuthStore();
   
   return (
     <div className="p-4 border-t border-sidebar-border">
-      {!isCollapsed && session?.user && (
+      {!isCollapsed && hasHydrated && session?.user && (
         <div className="mb-3">
           <div className="text-sm font-medium text-sidebar-foreground">
             {session.user.name || 'User'}
