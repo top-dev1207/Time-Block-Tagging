@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const { name, email, company, password } = validation.data;
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email }
     });
 
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
-    const user = await prisma.user.create({
+    const user = await prisma.users.create({
       data: {
         name,
         email,
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     await Promise.all(
       defaultGoals.map(goal =>
-        prisma.goal.create({
+        prisma.goals.create({
           data: {
             userId: user.id,
             type: goal.type,

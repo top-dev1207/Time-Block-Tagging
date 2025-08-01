@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { signIn } from "next-auth/react";
+import { useCalendarSync } from "@/hooks/useCalendarSync";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -18,6 +19,7 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { syncCalendarEvents } = useCalendarSync();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +43,12 @@ const LoginPage = () => {
           title: "Welcome back!",
           description: "Successfully signed in to your TimeROI dashboard.",
         });
+        
+        // Trigger calendar sync after successful login
+        setTimeout(() => {
+          syncCalendarEvents(true);
+        }, 1000);
+        
         router.push("/dashboard");
       }
     } catch (error) {
@@ -57,7 +65,15 @@ const LoginPage = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      const result = await signIn("google", { 
+        callbackUrl: "/dashboard",
+        redirect: false 
+      });
+      
+      if (result?.ok) {
+        // Calendar sync will be triggered automatically by useCalendarSync hook
+        router.push("/dashboard");
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -116,7 +132,7 @@ const LoginPage = () => {
               <Button 
                 type="submit" 
                 className="w-full" 
-                variant="hero"
+                // variant="hero"
                 disabled={isLoading}
               >
                 {isLoading ? "Signing In..." : "Sign In"}
@@ -135,7 +151,7 @@ const LoginPage = () => {
               
               <div className="mt-4 space-y-3">
                 <Button 
-                  variant="outline" 
+                  // variant="outline" 
                   className="w-full"
                   onClick={handleGoogleSignIn}
                   disabled={isLoading}
