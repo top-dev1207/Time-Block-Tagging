@@ -1,10 +1,9 @@
-// "use client";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { useAuthStore } from "@/store/authStore";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MusicRegistry - Registro Seguro de Obras Musicais",
+  title: "TimeROI - Executive Time Analytics",
   description:
-    "Plataforma confiável para registro, validação e proteção de direitos autorais musicais no Brasil",
+    "Help time-starved executives optimize their time allocation with data-driven insights and strategic time management tools.",
 };
 
 export default function RootLayout({
@@ -32,10 +31,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
-        <TooltipProvider>
-          <div id="__next">{children}</div>
-          <Toaster />
-        </TooltipProvider>
+        <SessionProvider>
+          <TooltipProvider>
+            <div id="__next">{children}</div>
+            <Toaster />
+          </TooltipProvider>
+        </SessionProvider>
       </body>
     </html>
   );
