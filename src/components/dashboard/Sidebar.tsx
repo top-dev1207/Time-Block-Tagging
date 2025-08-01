@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { signOut } from "next-auth/react";
+import { useAuthStore } from "@/store/authStore";
 
 const sidebarItems = [
   {
@@ -59,6 +61,34 @@ const sidebarItems = [
   }
 ];
 
+function UserSection({ isCollapsed, handleLogout }: { isCollapsed: boolean; handleLogout: () => void }) {
+  const { session } = useAuthStore();
+  
+  return (
+    <div className="p-4 border-t border-sidebar-border">
+      {!isCollapsed && session?.user && (
+        <div className="mb-3">
+          <div className="text-sm font-medium text-sidebar-foreground">
+            {session.user.name || 'User'}
+          </div>
+          <div className="text-xs text-sidebar-foreground/70">
+            {session.user.email}
+          </div>
+        </div>
+      )}
+      <Button
+        variant="ghost"
+        size={isCollapsed ? "icon" : "sm"}
+        onClick={handleLogout}
+        className="w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+      >
+        <LogOut className="h-4 w-4" />
+        {!isCollapsed && <span className="ml-2">Sign Out</span>}
+      </Button>
+    </div>
+  );
+}
+
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -68,8 +98,8 @@ const Sidebar = () => {
 
   const isActive = (path: string) => pathname === path;
 
-  const handleLogout = () => {
-    localStorage.removeItem("timeROI_user");
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
     toast({
       title: "Signed out successfully",
       description: "See you next time!",
@@ -171,23 +201,7 @@ const Sidebar = () => {
           </nav>
 
           {/* User Section */}
-          <div className="p-4 border-t border-sidebar-border">
-            {!isCollapsed && (
-              <div className="mb-3">
-                <div className="text-sm font-medium text-sidebar-foreground">Demo User</div>
-                <div className="text-xs text-sidebar-foreground/70">demo@timeroi.com</div>
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size={isCollapsed ? "icon" : "sm"}
-              onClick={handleLogout}
-              className="w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            >
-              <LogOut className="h-4 w-4" />
-              {!isCollapsed && <span className="ml-2">Sign Out</span>}
-            </Button>
-          </div>
+          <UserSection isCollapsed={isCollapsed} handleLogout={handleLogout} />
         </div>
       </aside>
     </>
