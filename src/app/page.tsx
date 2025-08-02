@@ -130,12 +130,12 @@ const LandingPage = () => {
               className="flex items-center space-x-4"
             >
               <Link href="/login">
-                <Button variant="ghost" className="text-warm hover:text-accent">
+                <Button className="btn-header-signin">
                   Sign In
                 </Button>
               </Link>
               <Link href="/signup">
-                <Button className="btn-elegant">
+                <Button className="btn-header-getstarted">
                   Get Started
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -146,11 +146,108 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 pt-16">
-        {/* Background Elements */}
+      <section className="relative min-h-screen flex items-center justify-center px-4 pt-16 overflow-hidden">
+        {/* Executive Time Management Background */}
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1920&h=1080&fit=crop"
+            alt="Executive Time Management and Productivity"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="hero-vivid-overlay" />
+        </div>
+
+        {/* Dynamic Grid Pattern */}
+        <div className="dynamic-grid" />
+        
+        {/* Time Block Visualization */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-72 h-72 warm-gradient rounded-full opacity-10 gentle-bounce" />
-          <div className="absolute bottom-20 right-20 w-96 h-96 ocean-gradient rounded-full opacity-10 gentle-bounce" style={{ animationDelay: '-2s' }} />
+          {mounted && (
+            <>
+              <div className="time-block" style={{ top: '20%' }} />
+              <div className="time-block" style={{ top: '30%' }} />
+              <div className="time-block" style={{ top: '60%' }} />
+              <div className="time-block" style={{ top: '80%' }} />
+            </>
+          )}
+        </div>
+        
+        {/* Time Clock Overlay */}
+        <div className="time-clock-overlay" />
+        
+        {/* Enhanced Floating Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          {mounted && (
+            <>
+              {/* Core Time Management Icons */}
+              <div className="productivity-icon" style={{ top: '15%', left: '10%' }}>
+                <Clock className="h-8 w-8" />
+              </div>
+              <div className="productivity-icon" style={{ top: '20%', right: '15%' }}>
+                <BarChart3 className="h-8 w-8" />
+              </div>
+              <div className="productivity-icon" style={{ bottom: '25%', left: '8%' }}>
+                <Timer className="h-8 w-8" />
+              </div>
+              <div className="productivity-icon" style={{ top: '65%', right: '12%' }}>
+                <PieChart className="h-8 w-8" />
+              </div>
+              <div className="productivity-icon" style={{ top: '45%', left: '5%' }}>
+                <Target className="h-7 w-7" />
+              </div>
+              
+              {/* Strategic Value Elements */}
+              <div className="floating-time-element clock" style={{ top: '18%', left: '25%' }}>
+                <span>£10K Strategic Time</span>
+              </div>
+              <div className="floating-time-element chart" style={{ top: '35%', right: '25%' }}>
+                <span>Time Block Analytics</span>
+              </div>
+              <div className="floating-time-element timer" style={{ bottom: '30%', left: '30%' }}>
+                <span>Executive ROI</span>
+              </div>
+              <div className="floating-time-element clock" style={{ top: '55%', right: '35%' }}>
+                <span>Value Optimization</span>
+              </div>
+              
+              {/* Orbiting Time Values */}
+              <div className="orbit-container" style={{ top: '25%', left: '50%' }}>
+                <div className="orbit-element">
+                  <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
+                    <span className="text-xs font-bold text-white">£10K</span>
+                  </div>
+                </div>
+                <div className="orbit-element">
+                  <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
+                    <span className="text-xs font-bold text-white">£1K</span>
+                  </div>
+                </div>
+                <div className="orbit-element">
+                  <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
+                    <span className="text-xs font-bold text-white">£100</span>
+                  </div>
+                </div>
+                <div className="orbit-element">
+                  <div className="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
+                    <span className="text-xs font-bold text-white">£10</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Productivity Indicators */}
+              <div className="productivity-icon" style={{ bottom: '40%', right: '8%' }}>
+                <TrendingUp className="h-7 w-7" />
+              </div>
+              <div className="productivity-icon" style={{ top: '75%', left: '15%' }}>
+                <Activity className="h-7 w-7" />
+              </div>
+              <div className="productivity-icon" style={{ bottom: '15%', right: '20%' }}>
+                <Award className="h-7 w-7" />
+              </div>
+            </>
+          )}
         </div>
 
         <div className="container mx-auto max-w-6xl relative z-10">
