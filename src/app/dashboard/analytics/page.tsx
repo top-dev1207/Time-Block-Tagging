@@ -96,8 +96,8 @@ const AnalyticsPage = () => {
           <p className="text-muted-foreground mt-1">Deep insights into your time allocation patterns and ROI trends</p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">Export Report</Button>
-          <Button variant="hero">Schedule Review</Button>
+          <Button>Export Report</Button>
+          <Button>Schedule Review</Button>
         </div>
       </div>
 

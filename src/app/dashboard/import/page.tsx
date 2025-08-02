@@ -108,7 +108,7 @@ const ImportPage = () => {
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <Button 
-                  variant="outline" 
+                  // variant="outline" 
                   className="h-20 flex-col"
                   onClick={() => connectCalendar("Google Calendar")}
                 >
@@ -119,7 +119,7 @@ const ImportPage = () => {
                 </Button>
                 
                 <Button 
-                  variant="outline" 
+                  // variant="outline" 
                   className="h-20 flex-col"
                   onClick={() => connectCalendar("Outlook")}
                 >
@@ -130,7 +130,7 @@ const ImportPage = () => {
                 </Button>
 
                 <Button 
-                  variant="outline" 
+                  // variant="outline" 
                   className="h-20 flex-col"
                   onClick={() => connectCalendar("Apple Calendar")}
                 >
@@ -141,7 +141,7 @@ const ImportPage = () => {
                 </Button>
 
                 <Button 
-                  variant="outline" 
+                  // variant="outline" 
                   className="h-20 flex-col"
                   onClick={() => connectCalendar("Other Calendar")}
                 >
@@ -187,7 +187,7 @@ const ImportPage = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Badge variant="success">Connected</Badge>
-                    <Button variant="outline" size="sm">Disconnect</Button>
+                    <Button size="sm">Disconnect</Button>
                   </div>
                 </div>
               </div>
@@ -261,7 +261,7 @@ const ImportPage = () => {
                       </p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button size="sm">
                     Process Image
                   </Button>
                 </div>
@@ -308,11 +308,11 @@ const ImportPage = () => {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
-                <Button variant="outline" className="justify-start">
+                <Button className="justify-start">
                   <Download className="h-4 w-4 mr-2" />
                   Download CSV Template
                 </Button>
-                <Button variant="outline" className="justify-start">
+                <Button className="justify-start">
                   <Download className="h-4 w-4 mr-2" />
                   Download Excel Template
                 </Button>

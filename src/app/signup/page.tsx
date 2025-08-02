@@ -205,7 +205,7 @@ const SignupPage = () => {
               <Button 
                 type="submit" 
                 className="w-full" 
-                variant="hero"
+                // variant="hero"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
@@ -224,7 +224,7 @@ const SignupPage = () => {
               
               <div className="mt-4 space-y-3">
                 <Button 
-                  variant="outline" 
+                  // variant="outline" 
                   className="w-full"
                   onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
                   disabled={isLoading}

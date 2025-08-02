@@ -19,10 +19,10 @@ const LandingPage = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/login">
-                <Button variant="ghost">Sign In</Button>
+                <Button>Sign In</Button>
               </Link>
               <Link href="/signup">
-                <Button variant="hero" size="sm">Get Started</Button>
+                <Button size="sm">Get Started</Button>
               </Link>
             </div>
           </div>
@@ -44,12 +44,12 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
-              <Button variant="hero" size="xl" className="group">
+              <Button size="xl" className="group">
                 Start Your Time Audit
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Button variant="outline" size="xl">
+            <Button size="xl">
               Watch Demo
             </Button>
           </div>
@@ -242,7 +242,7 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
-              <Button variant="secondary" size="xl" className="group">
+              <Button size="xl" className="group">
                 Start Free Analysis
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>

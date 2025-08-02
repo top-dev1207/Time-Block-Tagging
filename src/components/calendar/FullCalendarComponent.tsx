@@ -221,7 +221,7 @@ export default function FullCalendarComponent() {
         <Button 
           onClick={loadCalendarEvents} 
           disabled={isLoading}
-          variant="outline"
+          // variant="outline"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />

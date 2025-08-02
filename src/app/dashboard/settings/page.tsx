@@ -433,15 +433,15 @@ const SettingsPage = () => {
                     Export your time tracking data in various formats
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" onClick={() => handleExport("CSV")}>
+                    <Button onClick={() => handleExport("CSV")}>
                       <Download className="h-4 w-4 mr-2" />
                       Export as CSV
                     </Button>
-                    <Button variant="outline" onClick={() => handleExport("Excel")}>
+                    <Button onClick={() => handleExport("Excel")}>
                       <Download className="h-4 w-4 mr-2" />
                       Export as Excel
                     </Button>
-                    <Button variant="outline" onClick={() => handleExport("PDF")}>
+                    <Button onClick={() => handleExport("PDF")}>
                       <Download className="h-4 w-4 mr-2" />
                       Export as PDF
                     </Button>
@@ -482,7 +482,7 @@ const SettingsPage = () => {
                         <p className="font-medium">Google Calendar</p>
                         <p className="text-sm text-muted-foreground">Read-only access to events</p>
                       </div>
-                      <Button variant="outline" size="sm">Revoke Access</Button>
+                      <Button size="sm">Revoke Access</Button>
                     </div>
                   </div>
                 </div>
@@ -516,7 +516,7 @@ const SettingsPage = () => {
                       <Badge variant="success">Active</Badge>
                     </div>
                   </div>
-                  <Button variant="outline" className="mt-3">
+                  <Button className="mt-3">
                     Manage Subscription
                   </Button>
                 </div>
@@ -524,13 +524,13 @@ const SettingsPage = () => {
                 <div>
                   <h4 className="font-medium mb-2">Account Security</h4>
                   <div className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button className="w-full justify-start">
                       Change Password
                     </Button>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button className="w-full justify-start">
                       Enable Two-Factor Auth
                     </Button>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button className="w-full justify-start">
                       Download Account Data
                     </Button>
                   </div>
@@ -549,7 +549,7 @@ const SettingsPage = () => {
                         Permanently delete your account and all associated data. This action cannot be undone.
                       </p>
                     </div>
-                    <Button variant="destructive" className="flex items-center space-x-2">
+                    <Button className="flex items-center space-x-2">
                       <Trash2 className="h-4 w-4" />
                       <span>Delete Account</span>
                     </Button>

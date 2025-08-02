@@ -96,8 +96,8 @@ const DashboardOverview = () => {
           <p className="text-muted-foreground mt-1">Week of July 28 - August 3, 2024</p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">Export Report</Button>
-          <Button variant="hero">Optimize Schedule</Button>
+          <Button>Export Report</Button>
+          <Button>Optimize Schedule</Button>
         </div>
       </div>
 
