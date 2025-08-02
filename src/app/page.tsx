@@ -150,8 +150,8 @@ const LandingPage = () => {
         {/* Executive Time Management Background */}
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1920&h=1080&fit=crop"
-            alt="Executive Time Management and Productivity"
+            src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1920&h=1080&fit=crop"
+            alt="Executive Time Management and Strategic Planning"
             fill
             className="object-cover"
             priority
@@ -287,7 +287,7 @@ const LandingPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + index * 0.1 }}
                   className="time-card card-elegant p-6 text-center warm-pulse"
-                  style={{ '--card-accent': item.accent } as React.CSSProperties}
+                  // style={{ '--card-accent': item.accent } as React.CSSProperties}
                 >
                   <div className={`w-12 h-12 ${item.gradient} rounded-xl flex items-center justify-center mx-auto mb-4`}>
                     <item.icon className="h-6 w-6 text-white" />
