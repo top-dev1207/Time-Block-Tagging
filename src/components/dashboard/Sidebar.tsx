@@ -65,7 +65,7 @@ function UserSection({ isCollapsed, handleLogout }: { isCollapsed: boolean; hand
   const { session, hasHydrated } = useAuthStore();
   
   return (
-    <div className="p-4 border-t border-sidebar-border">
+    <div className={cn("border-t border-sidebar-border", isCollapsed ? "p-2" : "p-4")}>
       {!isCollapsed && hasHydrated && session?.user && (
         <div className="mb-3">
           <div className="text-sm font-medium text-sidebar-foreground">
@@ -77,12 +77,15 @@ function UserSection({ isCollapsed, handleLogout }: { isCollapsed: boolean; hand
         </div>
       )}
       <Button
-        variant="ghost"
         size={isCollapsed ? "icon" : "sm"}
         onClick={handleLogout}
-        className="w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        className={cn(
+          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          isCollapsed ? "w-12 h-12 mx-auto" : "w-full"
+        )}
+        title={isCollapsed ? "Sign Out" : undefined}
       >
-        <LogOut className="h-4 w-4" />
+        <LogOut className={cn(isCollapsed ? "h-6 w-6" : "h-4 w-4")} />
         {!isCollapsed && <span className="ml-2">Sign Out</span>}
       </Button>
     </div>
@@ -113,7 +116,6 @@ const Sidebar = () => {
     <>
       {/* Mobile Menu Button */}
       <Button
-        variant="ghost"
         size="icon"
         className="fixed top-4 left-4 z-50 md:hidden"
         onClick={toggleMobile}
@@ -139,29 +141,41 @@ const Sidebar = () => {
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-4 border-b border-sidebar-border">
-            <div className="flex items-center justify-between">
-              {!isCollapsed && (
+          <div className={cn("border-b border-sidebar-border", isCollapsed ? "p-2" : "p-4")}>
+            {isCollapsed ? (
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <Button
+                  size="icon"
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="hidden md:flex h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
                     <Clock className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <span className="text-lg font-bold text-sidebar-foreground">TimeROI</span>
                 </div>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="hidden md:flex h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-            </div>
+                <Button
+                  size="icon"
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="hidden md:flex h-8 w-8 hover:bg-sidebar-accent"
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className={cn("flex-1 space-y-2", isCollapsed ? "p-2" : "p-4")}>
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -172,13 +186,20 @@ const Sidebar = () => {
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors group",
+                    "flex items-center rounded-lg transition-colors group relative",
+                    isCollapsed 
+                      ? "justify-center p-3 mx-1" 
+                      : "space-x-3 px-3 py-2",
                     active 
                       ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm" 
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
+                  title={isCollapsed ? item.title : undefined}
                 >
-                  <Icon className={cn("h-5 w-5", active && "text-sidebar-primary-foreground")} />
+                  <Icon className={cn(
+                    active && "text-sidebar-primary-foreground",
+                    isCollapsed ? "h-6 w-6" : "h-5 w-5"
+                  )} />
                   {!isCollapsed && (
                     <div className="flex-1 min-w-0">
                       <div className="font-medium">{item.title}</div>
@@ -194,6 +215,20 @@ const Sidebar = () => {
                     <Badge variant="secondary" className="text-xs bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground">
                       Active
                     </Badge>
+                  )}
+                  {/* Tooltip for collapsed state */}
+                  {isCollapsed && (
+                    <div className={cn(
+                      "absolute left-full ml-2 px-2 py-1 text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none",
+                      active 
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground" 
+                        : "bg-sidebar-accent text-sidebar-accent-foreground border border-sidebar-border"
+                    )}>
+                      {item.title}
+                      <div className="text-xs opacity-70 mt-1">
+                        {item.description}
+                      </div>
+                    </div>
                   )}
                 </Link>
               );

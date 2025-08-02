@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,18 +9,30 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Clock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useCalendarSync } from "@/hooks/useCalendarSync";
 
-const LoginPage = () => {
+const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { data: session, status } = useSession();
   const { syncCalendarEvents } = useCalendarSync();
+  
+  // Get redirect URL from query params or default to dashboard
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push(callbackUrl);
+    }
+  }, [status, session, router, callbackUrl]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +62,8 @@ const LoginPage = () => {
           syncCalendarEvents(true);
         }, 1000);
         
-        router.push("/dashboard");
+        // Redirect to original destination or dashboard
+        router.push(callbackUrl);
       }
     } catch (error) {
       toast({
@@ -66,13 +80,13 @@ const LoginPage = () => {
     setIsLoading(true);
     try {
       const result = await signIn("google", { 
-        callbackUrl: "/dashboard",
+        callbackUrl: callbackUrl,
         redirect: false 
       });
       
       if (result?.ok) {
         // Calendar sync will be triggered automatically by useCalendarSync hook
-        router.push("/dashboard");
+        router.push(callbackUrl);
       }
     } catch (error) {
       toast({
@@ -178,6 +192,26 @@ const LoginPage = () => {
 
       </div>
     </div>
+  );
+};
+
+const LoginPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-dashboard flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card className="shadow-executive">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center">
+                <Clock className="h-6 w-6 animate-spin" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 };
 

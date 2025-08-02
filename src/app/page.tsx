@@ -19,10 +19,10 @@ const LandingPage = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/login">
-                <Button variant="ghost">Sign In</Button>
+                <Button>Sign In</Button>
               </Link>
               <Link href="/signup">
-                <Button variant="hero" size="sm">Get Started</Button>
+                <Button size="sm">Get Started</Button>
               </Link>
             </div>
           </div>
@@ -32,7 +32,7 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section className="py-20 px-4 text-center">
         <div className="container mx-auto max-w-4xl">
-          <Badge variant="tier-10k" className="mb-6">
+          <Badge className="mb-6">
             Executive Time Analytics
           </Badge>
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">
