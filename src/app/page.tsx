@@ -136,7 +136,7 @@ const LandingPage = () => {
               </Link>
               <Link href="/signup">
                 <Button className="btn-header-getstarted">
-                  Get Started
+                  Access Beta
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -263,19 +263,18 @@ const LandingPage = () => {
               transition={{ delay: 0.2 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-subtle mb-8 border border-indigo-200/30"
             >
-              <Heart className="h-4 w-4 text-pink-500" />
-              <span className="text-sm font-medium text-warm">Executive Time Analytics</span>
+              <Star className="h-4 w-4 text-yellow-500" />
+              <span className="text-sm font-medium text-warm">Exclusive Beta Access</span>
             </motion.div>
 
             <h1 className="text-5xl md:text-7xl font-bold mb-6 text-warm leading-tight">
-              Transform Your Time Into
+              Welcome to Your
               <br />
-              <span className="text-gradient-warm">Meaningful Value</span>
+              <span className="text-gradient-warm">Time Analytics Platform</span>
             </h1>
 
             <p className="text-xl md:text-2xl text-warm-light mb-12 max-w-3xl mx-auto leading-relaxed">
-              Discover whether you're investing your precious hours in £10K strategic work 
-              or getting caught up in £10 administrative tasks.
+              You're already part of our exclusive beta program. Start analyzing whether you're investing your precious hours in £10K strategic work or getting caught up in £10 administrative tasks.
             </p>
 
             {/* Time Value Cards */}
@@ -308,16 +307,12 @@ const LandingPage = () => {
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
               <Link href="/signup">
-                <Button className="btn-elegant px-8 py-4 text-lg">
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Start Your Time Audit
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button className="btn-elegant px-10 py-4 text-xl">
+                  <Sparkles className="mr-2 h-6 w-6" />
+                  Access Your Dashboard
+                  <ArrowRight className="ml-2 h-6 w-6" />
                 </Button>
               </Link>
-              <Button className="btn-elegant-outline px-8 py-4 text-lg">
-                <Play className="mr-2 h-5 w-5" />
-                Watch Demo
-              </Button>
             </motion.div>
           </motion.div>
         </div>
@@ -640,21 +635,20 @@ const LandingPage = () => {
             </div>
             
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-warm">
-              Ready to Transform Your
-              <span className="text-gradient-warm"> Time Into Value?</span>
+              Ready to Start Your
+              <span className="text-gradient-warm"> Time Analysis?</span>
             </h2>
             
             <p className="text-xl text-warm-light mb-8 max-w-2xl mx-auto">
-              Join hundreds of thoughtful executives who've discovered the power of 
-              intentional time allocation and balanced living.
+              You have exclusive access to our beta platform. Start optimizing your executive time allocation now.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link href="/signup">
-                <Button className="btn-elegant px-10 py-4 text-lg">
-                  <Heart className="mr-2 h-5 w-5" />
-                  Start Your Journey
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button className="btn-elegant px-12 py-4 text-xl">
+                  <Rocket className="mr-2 h-6 w-6" />
+                  Get Started Now
+                  <ArrowRight className="ml-2 h-6 w-6" />
                 </Button>
               </Link>
             </div>
@@ -662,15 +656,15 @@ const LandingPage = () => {
             <div className="flex items-center justify-center gap-8 text-sm text-warm-light">
               <div className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-500" />
-                <span>14-day free trial</span>
+                <span>Exclusive beta access</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-500" />
-                <span>No credit card required</span>
+                <span>All features included</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-500" />
-                <span>Cancel anytime</span>
+                <span>Expert feedback welcome</span>
               </div>
             </div>
           </motion.div>
