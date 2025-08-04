@@ -34,19 +34,19 @@ interface CalendarEvent {
 }
 
 const valueTiers = [
-  { value: "10000", label: "£10K - Transformational", color: "bg-red-500", bgColor: "#ef4444" },
-  { value: "1000", label: "£1K - High-leverage", color: "bg-orange-500", bgColor: "#f97316" },
-  { value: "100", label: "£100 - Operational", color: "bg-blue-500", bgColor: "#3b82f6" },
-  { value: "10", label: "£10 - Admin", color: "bg-gray-500", bgColor: "#6b7280" }
+  { value: "10000", label: "£10K - Transformational", color: "bg-purple-500", bgColor: "#a855f7" },
+  { value: "1000", label: "£1K - High-leverage", color: "bg-primary", bgColor: "#102C46" },
+  { value: "100", label: "£100 - Operational", color: "bg-green-500", bgColor: "#22c55e" },
+  { value: "10", label: "£10 - Admin", color: "bg-orange-500", bgColor: "#f97316" }
 ];
 
 const categories = [
   { value: "REV", label: "Revenue", color: "bg-green-100 text-green-800" },
-  { value: "REC", label: "Recovery", color: "bg-purple-100 text-purple-800" },
-  { value: "REL", label: "Relationships", color: "bg-blue-100 text-blue-800" },
+  { value: "REC", label: "Recovery", color: "bg-slate-100 text-slate-800" },
+  { value: "REL", label: "Relationships", color: "bg-primary/10 text-primary" },
   { value: "ADM", label: "Admin", color: "bg-gray-100 text-gray-800" },
   { value: "DEL", label: "Delivery", color: "bg-yellow-100 text-yellow-800" },
-  { value: "MTG", label: "Meetings", color: "bg-indigo-100 text-indigo-800" }
+  { value: "MTG", label: "Meetings", color: "bg-primary/20 text-primary" }
 ];
 
 export default function FullCalendarComponent() {

@@ -120,7 +120,7 @@ const SignupPage = () => {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/80 via-purple-900/70 to-blue-900/80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-primary/70" />
       </div>
 
       {/* Dynamic Grid Pattern */}
@@ -146,7 +146,7 @@ const SignupPage = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1, duration: 2, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute top-[25%] right-[15%] w-14 h-14 bg-purple-500/20 rounded-full flex items-center justify-center backdrop-blur-sm"
+              className="absolute top-[25%] right-[15%] w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center backdrop-blur-sm"
             >
               <BarChart3 className="h-7 w-7 text-purple-300" />
             </motion.div>
@@ -155,9 +155,9 @@ const SignupPage = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.5, duration: 1.8, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute bottom-[30%] right-[8%] w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center backdrop-blur-sm"
+              className="absolute bottom-[30%] right-[8%] w-12 h-12 bg-primary/30 rounded-full flex items-center justify-center backdrop-blur-sm"
             >
-              <Timer className="h-6 w-6 text-blue-300" />
+              <Timer className="h-6 w-6 text-white/70" />
             </motion.div>
 
             <motion.div 
@@ -183,7 +183,7 @@ const SignupPage = () => {
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.3, duration: 2.5, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute bottom-[35%] right-[20%] px-3 py-1 bg-purple-500/20 rounded-full backdrop-blur-sm border border-purple-300/30"
+              className="absolute bottom-[35%] right-[20%] px-3 py-1 bg-primary/20 rounded-full backdrop-blur-sm border border-primary/30"
             >
               <span className="text-purple-200 text-xs font-medium">Executive Growth</span>
             </motion.div>
@@ -192,9 +192,9 @@ const SignupPage = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1.1 }}
               transition={{ delay: 1.8, duration: 2.8, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute top-[45%] right-[12%] px-3 py-1 bg-blue-500/20 rounded-full backdrop-blur-sm border border-blue-300/30"
+              className="absolute top-[45%] right-[12%] px-3 py-1 bg-primary/20 rounded-full backdrop-blur-sm border border-primary/30"
             >
-              <span className="text-blue-200 text-xs font-medium">Time Optimization</span>
+              <span className="text-white/80 text-xs font-medium">Time Optimization</span>
             </motion.div>
 
             {/* Orbiting Elements */}
@@ -207,7 +207,7 @@ const SignupPage = () => {
                 <div className="absolute top-0 left-1/2 w-6 h-6 -ml-3 bg-yellow-500/30 rounded-full flex items-center justify-center">
                   <span className="text-xs font-bold text-yellow-200">£10K</span>
                 </div>
-                <div className="absolute right-0 top-1/2 w-6 h-6 -mt-3 bg-purple-500/30 rounded-full flex items-center justify-center">
+                <div className="absolute right-0 top-1/2 w-6 h-6 -mt-3 bg-primary/30 rounded-full flex items-center justify-center">
                   <span className="text-xs font-bold text-purple-200">£1K</span>
                 </div>
                 <div className="absolute bottom-0 left-1/2 w-6 h-6 -ml-3 bg-green-500/30 rounded-full flex items-center justify-center">
@@ -233,12 +233,12 @@ const SignupPage = () => {
           >
             <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border-0">
               <CardHeader className="text-center pb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 warm-gradient rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Clock className="h-7 w-7 text-white" />
                 </div>
-                <CardTitle className="text-2xl text-gray-900 mb-2">Start Your Time Transformation</CardTitle>
+                <CardTitle className="text-2xl text-gray-900 mb-2">Welcome to TimeROI Beta</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Join thousands of executives who've optimized their time allocation with TimeROI.
+                  You have exclusive access to our executive time analytics platform. Create your account to get started.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -315,11 +315,11 @@ const SignupPage = () => {
                     />
                     <Label htmlFor="terms" className="text-sm text-gray-600">
                       I agree to the{" "}
-                      <Link href="#" className="text-indigo-600 hover:text-indigo-500">
+                      <Link href="#" className="text-primary hover:text-primary/80">
                         Terms of Service
                       </Link>{" "}
                       and{" "}
-                      <Link href="#" className="text-indigo-600 hover:text-indigo-500">
+                      <Link href="#" className="text-primary hover:text-primary/80">
                         Privacy Policy
                       </Link>
                     </Label>
@@ -327,10 +327,10 @@ const SignupPage = () => {
                   
                   <Button 
                     type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium" 
+                    className="w-full h-11 btn-elegant text-white font-medium" 
                     disabled={isLoading}
                   >
-                    {isLoading ? "Creating Account..." : "Create Account"}
+                    {isLoading ? "Creating Beta Account..." : "Access Beta Platform"}
                   </Button>
                 </form>
 
@@ -363,7 +363,7 @@ const SignupPage = () => {
 
                 <div className="mt-6 text-center text-sm">
                   <span className="text-gray-600">Already have an account? </span>
-                  <Link href="/login" className="text-indigo-600 hover:text-indigo-500 font-medium">
+                  <Link href="/login" className="text-primary hover:text-primary/80 font-medium">
                     Sign in
                   </Link>
                 </div>
@@ -393,7 +393,7 @@ const SignupPage = () => {
               </Link>
               
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary/80 rounded-xl flex items-center justify-center">
                   <Clock className="h-7 w-7 text-white" />
                 </div>
                 <span className="text-3xl font-bold text-white">TimeROI</span>
@@ -408,7 +408,7 @@ const SignupPage = () => {
             >
               <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
                 Transform Your Executive
-                <span className="block text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
+                <span className="block text-transparent bg-gradient-to-r from-primary to-primary/70 bg-clip-text">
                   Time Portfolio
                 </span>
               </h1>

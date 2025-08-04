@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TimeROI - Executive Time Analytics",
+  title: "TimeROI - Executive Time Management",
   description:
-    "Help time-starved executives optimize their time allocation with data-driven insights and strategic time management tools.",
+    "Transform your time into strategic value. Data-driven time analytics and optimization platform for executives and business leaders.",
 };
 
 export default function RootLayout({

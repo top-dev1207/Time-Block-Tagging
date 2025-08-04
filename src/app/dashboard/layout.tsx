@@ -2,6 +2,7 @@
 
 import Sidebar from "@/components/dashboard/Sidebar";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { FeedbackWidget } from "@/components/beta/FeedbackWidget";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </main>
         </div>
+        
+        {/* Beta Feedback Widget for CFOs and Executives */}
+        <FeedbackWidget />
       </div>
     </AuthGuard>
   );

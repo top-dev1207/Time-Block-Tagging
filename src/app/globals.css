@@ -11,8 +11,8 @@
     --foreground: 210 40% 12%;
     
     /* Primary Brand - Client Brand Color #102C46 */
-    --primary: 210 58% 17%;
-    --primary-glow: 210 58% 27%;
+    --primary: 202 63% 17%;
+    --primary-glow: 202 63% 27%;
     --primary-foreground: 0 0% 98%;
     
     /* Secondary - Premium Gold */
@@ -33,24 +33,24 @@
     
     /* Time Value Tiers */
     --tier-10k: 284 100% 54%;     /* £10K - Purple (Transformational) */
-    --tier-1k: 210 58% 17%;       /* £1K - Brand Blue (High-leverage) */
+    --tier-1k: 202 63% 17%;       /* £1K - Brand Blue (High-leverage) */
     --tier-100: 142 72% 29%;      /* £100 - Green (Operational) */
     --tier-10: 25 95% 53%;        /* £10 - Orange (Admin/Low-value) */
     
     /* Three R's Categories */
-    --revenue: 210 58% 17%;       /* REV - Strategic Brand Blue */
+    --revenue: 202 63% 17%;       /* REV - Strategic Brand Blue */
     --recovery: 142 72% 29%;      /* REC - Recovery Green */
     --relationships: 284 100% 54%; /* REL - Relationship Purple */
     
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(210 58% 17%), hsl(284 100% 54%));
-    --gradient-dashboard: linear-gradient(180deg, hsl(0 0% 98%), hsl(210 5% 96%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 10% 97%));
+    --gradient-hero: linear-gradient(135deg, hsl(202 63% 17%), hsl(284 100% 54%));
+    --gradient-dashboard: linear-gradient(180deg, hsl(0 0% 98%), hsl(202 10% 96%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(202 10% 97%));
     
     /* Shadows & Effects */
-    --shadow-executive: 0 20px 60px -10px hsl(210 58% 17% / 0.15);
-    --shadow-card: 0 4px 20px -2px hsl(210 50% 20% / 0.08);
-    --shadow-float: 0 8px 30px -4px hsl(210 58% 17% / 0.2);
+    --shadow-executive: 0 20px 60px -10px hsl(202 63% 17% / 0.15);
+    --shadow-card: 0 4px 20px -2px hsl(202 50% 20% / 0.08);
+    --shadow-float: 0 8px 30px -4px hsl(202 63% 17% / 0.2);
     
     /* Animation */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -67,18 +67,18 @@
     --accent-foreground: 210 40% 12%;
     --border: 210 20% 88%;
     --input: 210 20% 88%;
-    --ring: 210 58% 17%;
+    --ring: 202 63% 17%;
     --radius: 0.75rem;
     
     /* Sidebar */
-    --sidebar-background: 210 30% 96%;
-    --sidebar-foreground: 210 40% 20%;
-    --sidebar-primary: 210 58% 17%;
+    --sidebar-background: 202 30% 96%;
+    --sidebar-foreground: 202 40% 20%;
+    --sidebar-primary: 202 63% 17%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 210 50% 90%;
-    --sidebar-accent-foreground: 210 40% 20%;
-    --sidebar-border: 210 30% 85%;
-    --sidebar-ring: 210 58% 17%;
+    --sidebar-accent: 202 50% 90%;
+    --sidebar-accent-foreground: 202 40% 20%;
+    --sidebar-border: 202 30% 85%;
+    --sidebar-ring: 202 63% 17%;
   }
 
   .dark {

@@ -116,7 +116,7 @@ const LoginForm = () => {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/80 via-purple-900/70 to-blue-900/80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-primary/70" />
       </div>
 
       {/* Dynamic Grid Pattern */}
@@ -142,18 +142,18 @@ const LoginForm = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1, duration: 2, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute top-[25%] left-[15%] w-14 h-14 bg-purple-500/20 rounded-full flex items-center justify-center backdrop-blur-sm"
+              className="absolute top-[25%] left-[15%] w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center backdrop-blur-sm"
             >
-              <BarChart3 className="h-7 w-7 text-purple-300" />
+              <BarChart3 className="h-7 w-7 text-white/70" />
             </motion.div>
 
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.5, duration: 1.8, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute bottom-[30%] left-[8%] w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center backdrop-blur-sm"
+              className="absolute bottom-[30%] left-[8%] w-12 h-12 bg-primary/30 rounded-full flex items-center justify-center backdrop-blur-sm"
             >
-              <Timer className="h-6 w-6 text-blue-300" />
+              <Timer className="h-6 w-6 text-white/70" />
             </motion.div>
 
             <motion.div 
@@ -179,18 +179,18 @@ const LoginForm = () => {
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.3, duration: 2.5, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute bottom-[35%] left-[20%] px-3 py-1 bg-purple-500/20 rounded-full backdrop-blur-sm border border-purple-300/30"
+              className="absolute bottom-[35%] left-[20%] px-3 py-1 bg-primary/20 rounded-full backdrop-blur-sm border border-primary/30"
             >
-              <span className="text-purple-200 text-xs font-medium">Executive ROI</span>
+              <span className="text-white/80 text-xs font-medium">Executive ROI</span>
             </motion.div>
 
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1.1 }}
               transition={{ delay: 1.8, duration: 2.8, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute top-[45%] left-[12%] px-3 py-1 bg-blue-500/20 rounded-full backdrop-blur-sm border border-blue-300/30"
+              className="absolute top-[45%] left-[12%] px-3 py-1 bg-primary/20 rounded-full backdrop-blur-sm border border-primary/30"
             >
-              <span className="text-blue-200 text-xs font-medium">Time Analytics</span>
+              <span className="text-white/80 text-xs font-medium">Time Analytics</span>
             </motion.div>
 
             {/* Orbiting Elements */}
@@ -204,7 +204,7 @@ const LoginForm = () => {
                   <span className="text-xs font-bold text-yellow-200">£10K</span>
                 </div>
                 <div className="absolute right-0 top-1/2 w-6 h-6 -mt-3 bg-purple-500/30 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-purple-200">£1K</span>
+                  <span className="text-xs font-bold text-white/80">£1K</span>
                 </div>
                 <div className="absolute bottom-0 left-1/2 w-6 h-6 -ml-3 bg-green-500/30 rounded-full flex items-center justify-center">
                   <span className="text-xs font-bold text-green-200">£100</span>
@@ -240,7 +240,7 @@ const LoginForm = () => {
               </Link>
               
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary/80 rounded-xl flex items-center justify-center">
                   <Clock className="h-7 w-7 text-white" />
                 </div>
                 <span className="text-3xl font-bold text-white">TimeROI</span>
@@ -255,7 +255,7 @@ const LoginForm = () => {
             >
               <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
                 Transform Your Time Into
-                <span className="block text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
+                <span className="block text-transparent bg-gradient-to-r from-primary to-primary/70 bg-clip-text">
                   Meaningful Value
                 </span>
               </h1>
@@ -352,7 +352,7 @@ const LoginForm = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium" 
+                    className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-medium" 
                     disabled={isLoading}
                   >
                     {isLoading ? "Signing In..." : "Sign In"}
@@ -388,7 +388,7 @@ const LoginForm = () => {
 
                 <div className="mt-6 text-center text-sm">
                   <span className="text-gray-600">Don't have an account? </span>
-                  <Link href="/signup" className="text-indigo-600 hover:text-indigo-500 font-medium">
+                  <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
                     Sign up
                   </Link>
                 </div>
