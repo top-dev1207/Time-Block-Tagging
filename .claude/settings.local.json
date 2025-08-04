@@ -35,6 +35,7 @@
       "Bash(npm install:*)",
       "Bash(git add:*)",
       "Bash(cd:*)",
+      "Bash(cd:*)",
       "Bash(cd:*)"
     ],
     "deny": []

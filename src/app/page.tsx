@@ -10,7 +10,7 @@ const HomePage = () => {
   useEffect(() => {
     // Redirect to login page - users need to authenticate first
     router.push('/login');
-  }, [router]);
+  }, []); // Empty dependency array since we only want this to run once
 
   // Show loading screen while redirecting
   return (

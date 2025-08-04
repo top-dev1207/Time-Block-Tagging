@@ -39,7 +39,7 @@ const LoginForm = () => {
     if (status === "authenticated" && session) {
       router.push(callbackUrl);
     }
-  }, [status, session, router, callbackUrl]);
+  }, [status, session, callbackUrl]); // Remove router from dependencies
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

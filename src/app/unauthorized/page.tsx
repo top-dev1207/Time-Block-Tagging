@@ -19,7 +19,7 @@ const UnauthorizedPage = () => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
-  }, [status, router]);
+  }, [status]); // Remove router from dependencies
 
   if (status === "loading") {
     return (

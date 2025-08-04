@@ -68,7 +68,7 @@ const VerifyEmailForm = () => {
     };
 
     verifyEmail();
-  }, [token, toast]);
+  }, [token]); // Remove toast from dependencies
 
   const getIcon = () => {
     if (isVerifying) return <Clock className="h-8 w-8 text-white animate-spin" />;

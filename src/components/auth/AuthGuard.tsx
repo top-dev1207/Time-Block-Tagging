@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
@@ -25,6 +25,16 @@ export function AuthGuard({
   const pathname = usePathname();
   const { setUser, clearUser } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Use refs to store stable references to functions
+  const setUserRef = useRef(setUser);
+  const clearUserRef = useRef(clearUser);
+  
+  // Update refs when functions change
+  useEffect(() => {
+    setUserRef.current = setUser;
+    clearUserRef.current = clearUser;
+  }, [setUser, clearUser]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -46,19 +56,6 @@ export function AuthGuard({
       }
     }
 
-    // Update auth store with session data
-    if (session?.user) {
-      setUser({
-        id: session.user.id || "",
-        name: session.user.name || "",
-        email: session.user.email || "",
-        image: session.user.image || "",
-        company: (session.user as any)?.company || "",
-      });
-    } else {
-      clearUser();
-    }
-
     // Check role-based access if roles are specified
     if (session && allowedRoles.length > 0) {
       const userRole = (session.user as any)?.role || "user";
@@ -67,7 +64,24 @@ export function AuthGuard({
         return;
       }
     }
-  }, [session, status, requireAuth, redirectTo, pathname, router, setUser, clearUser, allowedRoles]);
+  }, [session, status, requireAuth, redirectTo, pathname, allowedRoles]); // Remove router from dependencies
+
+  // Separate effect for updating auth state to prevent infinite loops
+  useEffect(() => {
+    if (status === "loading") return;
+    
+    if (session?.user) {
+      setUserRef.current({
+        id: session.user.id || "",
+        name: session.user.name || "",
+        email: session.user.email || "",
+        image: session.user.image || "",
+        company: (session.user as any)?.company || "",
+      });
+    } else {
+      clearUserRef.current();
+    }
+  }, [session, status]); // Only depend on session and status
 
   // Show loading state while checking authentication
   if (status === "loading" || isLoading) {
