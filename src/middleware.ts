@@ -3,33 +3,96 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req) {
-    // The user is already authenticated if this function is called
+    const token = req.nextauth.token;
+    const { pathname } = req.nextUrl;
+
+    // Allow access to auth pages when not authenticated
+    if (!token && (
+      pathname.startsWith('/login') ||
+      pathname.startsWith('/signup') ||
+      pathname.startsWith('/forgot-password') ||
+      pathname.startsWith('/reset-password') ||
+      pathname.startsWith('/verify-email') ||
+      pathname.startsWith('/resend-verification')
+    )) {
+      return NextResponse.next();
+    }
+
+    // Redirect to login if not authenticated and trying to access protected routes
+    if (!token && (
+      pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/profile') ||
+      pathname.startsWith('/settings') ||
+      pathname.startsWith('/change-password') ||
+      pathname === '/unauthorized'
+    )) {
+      const loginUrl = new URL('/login', req.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Redirect authenticated users away from auth pages
+    if (token && (
+      pathname.startsWith('/login') ||
+      pathname.startsWith('/signup') ||
+      pathname === '/'
+    )) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+
     return NextResponse.next();
   },
   {
     callbacks: {
-      authorized: ({ req, token }) => {
-        const pathname = req.nextUrl.pathname;
+      authorized: ({ token, req }) => {
+        const { pathname } = req.nextUrl;
         
-        // Protect dashboard routes - require authentication
-        if (pathname.startsWith("/dashboard")) {
-          return !!token; // Returns true if token exists, false otherwise
+        // Always allow access to auth-related pages
+        if (
+          pathname.startsWith('/login') ||
+          pathname.startsWith('/signup') ||
+          pathname.startsWith('/forgot-password') ||
+          pathname.startsWith('/reset-password') ||
+          pathname.startsWith('/verify-email') ||
+          pathname.startsWith('/resend-verification') ||
+          pathname.startsWith('/api/auth')
+        ) {
+          return true;
         }
-        
-        // Allow access to other routes
+
+        // Require authentication for protected routes
+        if (
+          pathname.startsWith('/dashboard') ||
+          pathname.startsWith('/profile') ||
+          pathname.startsWith('/settings') ||
+          pathname.startsWith('/change-password') ||
+          pathname === '/unauthorized'
+        ) {
+          return !!token;
+        }
+
         return true;
       },
     },
     pages: {
-      signIn: "/login", // Redirect to login page if not authenticated
+      signIn: "/login",
     },
   }
 );
 
-// Configure which routes to protect
 export const config = {
   matcher: [
-    // Protect all dashboard routes
     "/dashboard/:path*",
-  ],
+    "/profile/:path*",
+    "/settings/:path*",
+    "/change-password",
+    "/unauthorized",
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+    "/resend-verification",
+    "/"
+  ]
 };

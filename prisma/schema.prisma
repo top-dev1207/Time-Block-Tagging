@@ -54,6 +54,14 @@ model users {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
+  // Password reset fields
+  resetToken        String?   // Password reset token
+  resetTokenExpiry  DateTime? // Password reset token expiry
+  
+  // Email verification fields
+  verificationToken String?   // Email verification token
+  verificationTokenExpiry DateTime? // Email verification token expiry
+  
   accounts accounts[]
   sessions sessions[]
   

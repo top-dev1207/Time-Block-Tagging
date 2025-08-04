@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import AzureADProvider from "next-auth/providers/azure-ad";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
@@ -58,6 +59,16 @@ export const authOptions: NextAuthOptions = {
         }
       }
     }),
+    AzureADProvider({
+      clientId: process.env.AZURE_AD_CLIENT_ID!,
+      clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
+      tenantId: process.env.AZURE_AD_TENANT_ID,
+      authorization: {
+        params: {
+          scope: "openid email profile https://graph.microsoft.com/calendars.read https://graph.microsoft.com/calendars.readwrite"
+        }
+      }
+    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -111,6 +122,7 @@ export const authOptions: NextAuthOptions = {
         return {
           ...token,
           id: user.id,
+          company: (user as any)?.company,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
@@ -128,6 +140,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
+        (session.user as any).company = token.company as string;
         session.accessToken = token.accessToken as string;
       }
       return session;

@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import crypto from "crypto";
 
 const signupSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email format"),
   company: z.string().min(1, "Company is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/, 
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"),
 });
 
 export async function POST(request: NextRequest) {
@@ -39,6 +43,10 @@ export async function POST(request: NextRequest) {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
+    
+    // Generate email verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Create user
     const user = await prisma.users.create({
@@ -47,6 +55,8 @@ export async function POST(request: NextRequest) {
         email,
         company,
         password: hashedPassword,
+        verificationToken,
+        verificationTokenExpiry,
       },
       select: {
         id: true,
@@ -94,10 +104,16 @@ export async function POST(request: NextRequest) {
       )
     );
 
+    // TODO: In production, send verification email
+    // For now, we'll just log it (in development you could check console)
+    console.log(`Email verification token for ${email}: ${verificationToken}`);
+    console.log(`Verification link: ${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}`);
+
     return NextResponse.json(
       { 
-        message: "User created successfully",
-        user: user
+        message: "User created successfully. Please check your email to verify your account.",
+        user: user,
+        requiresVerification: true
       },
       { status: 201 }
     );
