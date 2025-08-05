@@ -43,37 +43,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate new verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    // Generate new 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+    const verificationCodeExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // Update user with new verification token
+    // Update user with new verification code
     await prisma.users.update({
       where: { id: user.id },
       data: {
-        verificationToken: verificationToken,
-        verificationTokenExpiry: verificationTokenExpiry,
+        verificationToken: verificationCode,
+        verificationTokenExpiry: verificationCodeExpiry,
       }
     });
 
-    // Send verification email
+    // Send verification code email
     try {
-      const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
-      
-      const { sendEmail, generateVerificationEmailHtml, generateVerificationEmailText } = await import("@/lib/email");
+      const { sendEmail, generateVerificationCodeEmailHtml, generateVerificationCodeEmailText } = await import("@/lib/email");
       
       // Extract name from email for personalization
       const name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       
       await sendEmail({
         to: email,
-        subject: "Verify your email - TimeROI Beta Access",
-        html: generateVerificationEmailHtml(name, verificationUrl),
-        text: generateVerificationEmailText(name, verificationUrl)
+        subject: "Your TimeROI verification code",
+        html: generateVerificationCodeEmailHtml(name, verificationCode),
+        text: generateVerificationCodeEmailText(name, verificationCode)
       });
       
-      console.log(`Verification email resent to: ${email}`);
-      console.log(`Verification link: ${verificationUrl}`);
+      console.log(`Verification code resent to: ${email}`);
+      console.log(`Verification code: ${verificationCode} (expires in 5 minutes)`);
     } catch (emailError) {
       console.error("Failed to resend verification email:", emailError);
       return NextResponse.json(

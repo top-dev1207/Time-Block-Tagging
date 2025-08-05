@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
     
-    // Generate email verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    // Generate 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+    const verificationCodeExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
     // Create user
     const user = await prisma.users.create({
@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
         email,
         company,
         password: hashedPassword,
-        verificationToken,
-        verificationTokenExpiry,
+        verificationToken: verificationCode,
+        verificationTokenExpiry: verificationCodeExpiry,
       },
       select: {
         id: true,
@@ -104,21 +104,19 @@ export async function POST(request: NextRequest) {
       )
     );
 
-    // Send verification email
+    // Send verification code email
     try {
-      const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
-      
-      const { sendEmail, generateVerificationEmailHtml, generateVerificationEmailText } = await import("@/lib/email");
+      const { sendEmail, generateVerificationCodeEmailHtml, generateVerificationCodeEmailText } = await import("@/lib/email");
       
       await sendEmail({
         to: email,
-        subject: "Verify your email - TimeROI Beta Access",
-        html: generateVerificationEmailHtml(name, verificationUrl),
-        text: generateVerificationEmailText(name, verificationUrl)
+        subject: "Your TimeROI verification code",
+        html: generateVerificationCodeEmailHtml(name, verificationCode),
+        text: generateVerificationCodeEmailText(name, verificationCode)
       });
       
-      console.log(`Email verification sent to: ${email}`);
-      console.log(`Verification link: ${verificationUrl}`);
+      console.log(`Verification code sent to: ${email}`);
+      console.log(`Verification code: ${verificationCode} (expires in 5 minutes)`);
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError);
       // Continue with user creation even if email fails

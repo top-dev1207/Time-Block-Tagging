@@ -282,8 +282,8 @@ const SignupPage = () => {
         description: "Please check your email to verify your account.",
       });
 
-      // Redirect to email verification page
-      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+      // Redirect to code verification page
+      router.push(`/verify-code?email=${encodeURIComponent(formData.email)}`);
 
     } catch (error) {
       toast({
