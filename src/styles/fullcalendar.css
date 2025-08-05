@@ -338,3 +338,31 @@
   -moz-user-select: none;
   -ms-user-select: none;
 }
+
+/* UK Date Format Styles */
+.fc-daygrid-day-number,
+.fc-col-header-cell-cushion,
+.fc-timegrid-axis-cushion {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ensure DD/MM/YYYY format for day numbers in month view */
+.fc-daygrid-day-top {
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+/* Time format - 24 hour */
+.fc-timegrid-axis-cushion,
+.fc-event-time {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Week starts on Monday (already set in component, but reinforced here) */
+.fc-dayGridMonth-view .fc-day-sun {
+  order: 7;
+}
+
+.fc-dayGridMonth-view .fc-day-mon {
+  order: 1;
+}

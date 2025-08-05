@@ -130,7 +130,7 @@ const ImportPage = () => {
                   </svg>
                   <span>Microsoft Outlook</span>
                 </Button>
-
+{/* 
                 <Button 
                   // variant="outline" 
                   className="h-20 flex-col"
@@ -149,7 +149,7 @@ const ImportPage = () => {
                 >
                   <Calendar className="w-8 h-8 mb-2" />
                   <span>Other Calendar</span>
-                </Button>
+                </Button> */}
               </div>
 
               <div className="p-4 bg-muted/30 rounded-lg">

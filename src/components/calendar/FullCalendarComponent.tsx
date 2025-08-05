@@ -262,10 +262,47 @@ export default function FullCalendarComponent() {
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="timeGridWeek"
+            locale="en-GB"
+            timeZone="Europe/London"
+            firstDay={1}
             headerToolbar={{
-              left: 'prev,next today',
+              left: 'prev,next Today',
               center: 'title',
               right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            }}
+            titleFormat={{
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }}
+            dayHeaderFormat={{
+              weekday: 'short',
+              day: '2-digit',
+              month: '2-digit'
+            }}
+            dayPopoverFormat={{
+              weekday: 'long',
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric'
+            }}
+            dayHeaderContent={(args) => {
+              // Format as DD/MM for day headers in week view
+              const date = args.date;
+              const day = String(date.getDate()).padStart(2, '0');
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const weekday = date.toLocaleDateString('en-GB', { weekday: 'short' });
+              return `${weekday} ${day}/${month}`;
+            }}
+            slotLabelFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }}
+            eventTimeFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
             }}
             events={calendarEvents}
             eventClick={handleEventClick}
