@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Clock, ArrowLeft, TrendingUp, Target, BarChart3, Timer, Award, Lightbulb, Users, Activity, PieChart, DollarSign } from "lucide-react";
+import { Clock, ArrowLeft, TrendingUp, Target, BarChart3, Timer, Award, Lightbulb, Users, Activity, PieChart, DollarSign, Mail } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -53,11 +53,21 @@ const LoginForm = () => {
       });
 
       if (result?.error) {
-        toast({
-          title: "Invalid credentials",
-          description: "Please check your email and password.",
-          variant: "destructive",
-        });
+        if (result.error.includes("verify your email")) {
+          toast({
+            title: "Email verification required",
+            description: "Please verify your email before signing in. Check your inbox for the verification link.",
+            variant: "destructive",
+          });
+          // Redirect to verification page with email
+          router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        } else {
+          toast({
+            title: "Invalid credentials",
+            description: "Please check your email and password.",
+            variant: "destructive",
+          });
+        }
       } else if (result?.ok) {
         toast({
           title: "Welcome back!",

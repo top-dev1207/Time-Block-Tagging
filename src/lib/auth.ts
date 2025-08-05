@@ -99,6 +99,11 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Check if email is verified
+        if (!user.emailVerified) {
+          throw new Error("Please verify your email before signing in");
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -116,6 +121,71 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Handle Google OAuth signup/login
+      if (account?.provider === "google") {
+        try {
+          // Check if user already exists
+          const existingUser = await prisma.users.findUnique({
+            where: { email: user.email! }
+          });
+
+          if (!existingUser) {
+            // Create new user for Google signup
+            const newUser = await prisma.users.create({
+              data: {
+                email: user.email!,
+                name: user.name || "",
+                image: user.image || "",
+                company: "", // Will be updated later
+                emailVerified: new Date(), // Google accounts are pre-verified
+                provider: "google",
+              }
+            });
+            user.id = newUser.id;
+          } else {
+            user.id = existingUser.id;
+            (user as any).company = existingUser.company;
+          }
+          return true;
+        } catch (error) {
+          console.error("Google sign-in error:", error);
+          return false;
+        }
+      }
+      
+      // Handle Azure AD OAuth signup/login
+      if (account?.provider === "azure-ad") {
+        try {
+          const existingUser = await prisma.users.findUnique({
+            where: { email: user.email! }
+          });
+
+          if (!existingUser) {
+            const newUser = await prisma.users.create({
+              data: {
+                email: user.email!,
+                name: user.name || "",
+                image: user.image || "",
+                company: "", // Will be updated later
+                emailVerified: new Date(), // Azure accounts are pre-verified
+                provider: "azure-ad",
+              }
+            });
+            user.id = newUser.id;
+          } else {
+            user.id = existingUser.id;
+            (user as any).company = existingUser.company;
+          }
+          return true;
+        } catch (error) {
+          console.error("Azure AD sign-in error:", error);
+          return false;
+        }
+      }
+
+      return true;
+    },
     async jwt({ token, user, account }) {
       // Initial sign in
       if (account && user) {

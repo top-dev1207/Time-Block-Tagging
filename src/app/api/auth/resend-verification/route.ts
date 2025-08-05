@@ -56,10 +56,31 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // TODO: In production, send verification email
-    // For now, we'll just log it (in development you could check console)
-    console.log(`Email verification token for ${email}: ${verificationToken}`);
-    console.log(`Verification link: ${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}`);
+    // Send verification email
+    try {
+      const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+      
+      const { sendEmail, generateVerificationEmailHtml, generateVerificationEmailText } = await import("@/lib/email");
+      
+      // Extract name from email for personalization
+      const name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      
+      await sendEmail({
+        to: email,
+        subject: "Verify your email - TimeROI Beta Access",
+        html: generateVerificationEmailHtml(name, verificationUrl),
+        text: generateVerificationEmailText(name, verificationUrl)
+      });
+      
+      console.log(`Verification email resent to: ${email}`);
+      console.log(`Verification link: ${verificationUrl}`);
+    } catch (emailError) {
+      console.error("Failed to resend verification email:", emailError);
+      return NextResponse.json(
+        { error: "Failed to send verification email" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { message: "If an account with that email exists and is unverified, we've sent a verification email." },

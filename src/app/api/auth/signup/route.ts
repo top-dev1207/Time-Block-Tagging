@@ -104,10 +104,25 @@ export async function POST(request: NextRequest) {
       )
     );
 
-    // TODO: In production, send verification email
-    // For now, we'll just log it (in development you could check console)
-    console.log(`Email verification token for ${email}: ${verificationToken}`);
-    console.log(`Verification link: ${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}`);
+    // Send verification email
+    try {
+      const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+      
+      const { sendEmail, generateVerificationEmailHtml, generateVerificationEmailText } = await import("@/lib/email");
+      
+      await sendEmail({
+        to: email,
+        subject: "Verify your email - TimeROI Beta Access",
+        html: generateVerificationEmailHtml(name, verificationUrl),
+        text: generateVerificationEmailText(name, verificationUrl)
+      });
+      
+      console.log(`Email verification sent to: ${email}`);
+      console.log(`Verification link: ${verificationUrl}`);
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError);
+      // Continue with user creation even if email fails
+    }
 
     return NextResponse.json(
       { 

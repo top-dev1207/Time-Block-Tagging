@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, CheckCircle, AlertCircle, Mail } from "lucide-react";
+import { Clock, CheckCircle, AlertCircle, Mail, RefreshCw, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -15,60 +15,105 @@ const VerifyEmailForm = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
   
   const token = searchParams.get("token");
+  const email = searchParams.get("email");
 
   useEffect(() => {
-    if (!token) {
+    if (token) {
+      handleVerification(token);
+    }
+  }, [token]);
+
+  const handleVerification = async (verificationToken: string) => {
+    setIsVerifying(true);
+    
+    try {
+      const response = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: verificationToken }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setIsVerified(true);
+        toast({
+          title: "Email Verified! ✅",
+          description: "Your account has been successfully verified. You can now sign in.",
+        });
+      } else {
+        setIsError(true);
+        toast({
+          title: "Verification Failed",
+          description: data.error || "Invalid or expired verification link.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       setIsError(true);
+      toast({
+        title: "Verification Error",
+        description: "Failed to verify email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      toast({
+        title: "No Email Found",
+        description: "Please return to signup and try again.",
+        variant: "destructive",
+      });
       return;
     }
 
-    const verifyEmail = async () => {
-      setIsVerifying(true);
-      
-      try {
-        const response = await fetch("/api/auth/verify-email", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token }),
-        });
+    setIsResending(true);
+    
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
 
-        const data = await response.json();
-        
-        if (response.ok) {
-          setIsVerified(true);
-          toast({
-            title: "Email Verified!",
-            description: "Your email has been successfully verified.",
-          });
-        } else {
-          setIsError(true);
-          toast({
-            title: "Verification Failed",
-            description: data.error || "Invalid or expired verification link.",
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        setIsError(true);
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "Verification Email Sent",
+          description: "Check your email for the new verification link.",
+        });
+      } else {
         toast({
           title: "Error",
-          description: "Failed to verify email",
+          description: data.error || "Failed to resend verification email.",
           variant: "destructive",
         });
-      } finally {
-        setIsVerifying(false);
       }
-    };
-
-    verifyEmail();
-  }, [token]); // Remove toast from dependencies
+    } catch (error) {
+      toast({
+        title: "Connection Error",
+        description: "Failed to resend verification email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const getIcon = () => {
     if (isVerifying) return <Clock className="h-8 w-8 text-white animate-spin" />;
@@ -84,8 +129,10 @@ const VerifyEmailForm = () => {
 
   const getDescription = () => {
     if (isVerifying) return "Please wait while we verify your email address.";
-    if (isVerified) return "Your email has been successfully verified. You can now sign in to your account.";
-    return "This verification link is invalid or has expired.";
+    if (isVerified) return "Your account has been successfully verified.";
+    if (token && isError) return "This verification link is invalid or has expired.";
+    if (email) return `We've sent a verification link to ${email}`;
+    return "Please check your email for a verification link.";
   };
 
   return (
@@ -129,35 +176,120 @@ const VerifyEmailForm = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center space-y-4">
-                {isVerified && (
+              {isVerified ? (
+                <div className="text-center space-y-4">
+                  <p className="text-green-600 font-medium">
+                    🎉 Welcome to TimeROI! Your account is now active.
+                  </p>
                   <Link href="/login">
                     <Button className="w-full h-11 btn-elegant text-white font-medium">
                       Sign In Now
                     </Button>
                   </Link>
-                )}
-                
-                {isError && (
-                  <>
-                    <Link href="/resend-verification">
-                      <Button className="w-full h-11 btn-elegant text-white font-medium mb-3">
-                        Request New Link
-                      </Button>
-                    </Link>
-                    <Link href="/signup">
-                      <Button variant="outline" className="w-full h-11">
-                        Back to Sign Up
-                      </Button>
-                    </Link>
-                  </>
-                )}
-
-                <div className="mt-6">
-                  <Link href="/login" className="text-primary hover:text-primary/80 font-medium">
-                    Back to Sign In
-                  </Link>
                 </div>
+              ) : !isVerifying && !token ? (
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <h3 className="text-sm font-medium text-blue-800 mb-1">
+                          Verification Required
+                        </h3>
+                        <p className="text-sm text-blue-700">
+                          Click the verification link in your email to activate your account. 
+                          Check your spam folder if you don't see it.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <Button 
+                      onClick={handleResendVerification}
+                      disabled={isResending}
+                      className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-medium"
+                    >
+                      {isResending ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Resend Verification Email
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => router.push("/login")}
+                      className="w-full h-11"
+                    >
+                      I'll verify later - Go to Login
+                    </Button>
+                  </div>
+                </div>
+              ) : isVerifying ? (
+                <div className="text-center">
+                  <div className="flex justify-center mb-4">
+                    <Clock className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                  <p className="text-gray-600">
+                    Verifying your email address...
+                  </p>
+                </div>
+              ) : isError ? (
+                <div className="space-y-4">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                      <div>
+                        <h3 className="text-sm font-medium text-red-800 mb-1">
+                          Verification Failed
+                        </h3>
+                        <p className="text-sm text-red-700">
+                          This verification link is invalid or has expired. Please request a new one.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <Button 
+                      onClick={handleResendVerification}
+                      disabled={isResending}
+                      className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-medium"
+                    >
+                      {isResending ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Request New Verification Link
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => router.push("/signup")}
+                      className="w-full h-11"
+                    >
+                      Back to Sign Up
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="mt-6 text-center">
+                <Link href="/signup" className="inline-flex items-center space-x-2 text-primary hover:text-primary/80 font-medium">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Back to Sign Up</span>
+                </Link>
               </div>
             </CardContent>
           </Card>
