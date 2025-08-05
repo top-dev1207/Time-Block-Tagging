@@ -111,7 +111,6 @@ const UnauthorizedPage = () => {
                 </Button>
                 
                 <Button 
-                  variant="outline"
                   onClick={() => router.back()}
                   className="w-full h-11"
                 >

@@ -16,7 +16,6 @@ import {
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { signOut } from "next-auth/react";
@@ -77,18 +76,24 @@ function UserSection({ isCollapsed, handleLogout }: { isCollapsed: boolean; hand
           </div>
         </div>
       )}
-      <Button
-        size={isCollapsed ? "icon" : "sm"}
+      <button
         onClick={handleLogout}
         className={cn(
-          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-          isCollapsed ? "w-12 h-12 mx-auto" : "w-full"
+          "flex items-center justify-center rounded-lg transition-all duration-300 text-sidebar-foreground hover:text-red-500 group relative overflow-hidden",
+          isCollapsed ? "w-12 h-12 mx-auto p-3" : "w-full px-3 py-2 space-x-2"
         )}
         title={isCollapsed ? "Sign Out" : undefined}
       >
-        <LogOut className={cn(isCollapsed ? "h-6 w-6" : "h-4 w-4")} />
-        {!isCollapsed && <span className="ml-2">Sign Out</span>}
-      </Button>
+        <LogOut className={cn(
+          "transition-all duration-300 group-hover:scale-110 drop-shadow-sm group-hover:drop-shadow-md",
+          isCollapsed ? "h-7 w-7" : "h-4 w-4"
+        )} />
+        {!isCollapsed && <span className="text-sm font-medium transition-colors duration-300">Sign Out</span>}
+        <div className={cn(
+          "absolute inset-0 bg-red-500/0 group-hover:bg-red-500/10 transition-all duration-300 rounded-lg",
+          "scale-75 group-hover:scale-100 opacity-0 group-hover:opacity-100"
+        )}></div>
+      </button>
     </div>
   );
 }
@@ -117,13 +122,13 @@ const Sidebar = () => {
   return (
     <>
       {/* Mobile Menu Button */}
-      <Button
-        size="icon"
-        className="fixed top-4 left-4 z-50 md:hidden"
+      <button
+        className="fixed top-4 left-4 z-50 md:hidden flex items-center justify-center w-12 h-12 text-sidebar-foreground hover:text-sidebar-primary transition-all duration-300 group relative"
         onClick={toggleMobile}
       >
-        {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
+        {isMobileOpen ? <X className="h-6 w-6 transition-all duration-300 group-hover:scale-125 group-hover:rotate-90 drop-shadow-sm group-hover:drop-shadow-md" /> : <Menu className="h-6 w-6 transition-all duration-300 group-hover:scale-125 group-hover:rotate-90 drop-shadow-sm group-hover:drop-shadow-md" />}
+        <div className="absolute inset-0 rounded-lg bg-sidebar-primary/0 group-hover:bg-sidebar-primary/10 transition-all duration-300 scale-75 group-hover:scale-100 opacity-0 group-hover:opacity-100"></div>
+      </button>
 
       {/* Mobile Overlay */}
       {isMobileOpen && (
@@ -149,13 +154,13 @@ const Sidebar = () => {
                 <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center">
                   <Clock className="h-6 w-6" />
                 </div>
-                <Button
-                  size="icon"
+                <button
                   onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="hidden md:flex h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
+                  className="hidden md:flex h-10 w-10 items-center justify-center text-sidebar-foreground hover:text-sidebar-primary transition-all duration-300 group relative"
                 >
-                  <Menu className="h-4 w-4" />
-                </Button>
+                  <Menu className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-90 drop-shadow-sm group-hover:drop-shadow-md" />
+                  <div className="absolute inset-0 rounded-lg bg-sidebar-primary/0 group-hover:bg-sidebar-primary/10 transition-all duration-300 scale-75 group-hover:scale-100 opacity-0 group-hover:opacity-100"></div>
+                </button>
               </div>
             ) : (
               <div className="flex items-center justify-between">
@@ -165,13 +170,13 @@ const Sidebar = () => {
                   </div>
                   <span className="text-lg font-bold text-sidebar-foreground">TimeROI</span>
                 </div>
-                <Button
-                  size="icon"
+                <button
                   onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="hidden md:flex h-8 w-8 hover:bg-sidebar-accent"
+                  className="hidden md:flex h-10 w-10 items-center justify-center text-sidebar-foreground hover:text-sidebar-primary transition-all duration-300 group relative"
                 >
-                  <Menu className="h-4 w-4" />
-                </Button>
+                  <Menu className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:rotate-90 drop-shadow-sm group-hover:drop-shadow-md" />
+                  <div className="absolute inset-0 rounded-lg bg-sidebar-primary/0 group-hover:bg-sidebar-primary/10 transition-all duration-300 scale-75 group-hover:scale-100 opacity-0 group-hover:opacity-100"></div>
+                </button>
               </div>
             )}
           </div>
@@ -193,19 +198,19 @@ const Sidebar = () => {
                     }
                   }}
                   className={cn(
-                    "flex items-center rounded-lg transition-colors group relative",
+                    "flex items-center rounded-lg transition-all duration-200 group relative",
                     isCollapsed 
-                      ? "justify-center p-3 mx-1" 
+                      ? "justify-center p-3 mx-1 hover:scale-105" 
                       : "space-x-3 px-3 py-2",
                     active 
                       ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm" 
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-sm"
                   )}
                   title={isCollapsed ? item.title : undefined}
                 >
                   <Icon className={cn(
                     active && "text-sidebar-primary-foreground",
-                    isCollapsed ? "h-6 w-6" : "h-5 w-5"
+                    isCollapsed ? "h-7 w-7" : "h-5 w-5"
                   )} />
                   {!isCollapsed && (
                     <div className="flex-1 min-w-0">

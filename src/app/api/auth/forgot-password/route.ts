@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import crypto from "crypto";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -30,31 +32,59 @@ export async function POST(request: NextRequest) {
     if (!user) {
       // Don't reveal if user exists or not for security
       return NextResponse.json(
-        { message: "If an account with that email exists, we've sent a password reset link." },
+        { message: "If an account with that email exists, we've sent a 6-digit verification code." },
         { status: 200 }
       );
     }
 
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+    // Generate 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationCodeExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
 
-    // Save reset token to database
+    // Save verification code to database
     await prisma.users.update({
       where: { id: user.id },
       data: {
-        resetToken,
-        resetTokenExpiry,
+        verificationCode,
+        verificationCodeExpiry,
       }
     });
 
-    // TODO: In production, send email with reset link
-    // For now, we'll just log it (in development you could check console)
-    console.log(`Password reset token for ${email}: ${resetToken}`);
-    console.log(`Reset link: ${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`);
+    // Send verification code via email using Resend
+    try {
+      await resend.emails.send({
+        from: process.env.EMAIL_FROM || 'noreply@timeROI.com',
+        to: [email],
+        subject: 'Password Reset Verification Code - TimeROI',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, hsl(202, 63%, 17%), hsl(284, 100%, 54%)); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+              <h1 style="color: white; margin: 0; font-size: 28px;">TimeROI</h1>
+              <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Password Reset Request</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+              <h2 style="color: #333; margin-bottom: 20px;">Your Verification Code</h2>
+              <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #e9ecef; margin: 20px 0;">
+                <span style="font-size: 32px; font-weight: bold; color: hsl(202, 63%, 17%); letter-spacing: 8px;">${verificationCode}</span>
+              </div>
+              <p style="color: #666; margin: 15px 0; font-size: 14px;">This code will expire in 5 minutes</p>
+            </div>
+            
+            <div style="padding: 20px; text-align: center;">
+              <p style="color: #666; margin: 0; font-size: 14px;">If you didn't request this password reset, please ignore this email.</p>
+              <p style="color: #666; margin: 10px 0 0 0; font-size: 12px;">This is an automated message, please do not reply.</p>
+            </div>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Don't reveal email sending failure to user for security
+    }
 
     return NextResponse.json(
-      { message: "If an account with that email exists, we've sent a password reset link." },
+      { message: "If an account with that email exists, we've sent a 6-digit verification code." },
       { status: 200 }
     );
 

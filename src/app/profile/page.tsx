@@ -157,13 +157,13 @@ const ProfilePage = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Link href="/change-password">
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button className="w-full justify-start">
                       <Lock className="mr-2 h-4 w-4" />
                       Change Password
                     </Button>
                   </Link>
                   <Link href="/notification-settings">
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button className="w-full justify-start">
                       <Bell className="mr-2 h-4 w-4" />
                       Notification Settings
                     </Button>
@@ -256,7 +256,7 @@ const ProfilePage = () => {
                       <p className="text-sm text-gray-600">Last updated 30 days ago</p>
                     </div>
                     <Link href="/change-password">
-                      <Button variant="outline">Change</Button>
+                      <Button>Change</Button>
                     </Link>
                   </div>
                   
@@ -265,7 +265,7 @@ const ProfilePage = () => {
                       <h4 className="font-medium">Two-Factor Authentication</h4>
                       <p className="text-sm text-gray-600">Add an extra layer of security</p>
                     </div>
-                    <Button variant="outline" disabled>
+                    <Button disabled>
                       Enable
                     </Button>
                   </div>
@@ -275,7 +275,7 @@ const ProfilePage = () => {
                       <h4 className="font-medium">Connected Accounts</h4>
                       <p className="text-sm text-gray-600">Google Calendar integration</p>
                     </div>
-                    <Button variant="outline">Manage</Button>
+                    <Button >Manage</Button>
                   </div>
                 </CardContent>
               </Card>

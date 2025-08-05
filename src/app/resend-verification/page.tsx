@@ -135,7 +135,6 @@ const ResendVerificationPage = () => {
                       setIsSubmitted(false);
                       setEmail("");
                     }}
-                    variant="outline"
                     className="w-full h-11"
                   >
                     Send to Different Email

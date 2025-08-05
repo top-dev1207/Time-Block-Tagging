@@ -47,10 +47,21 @@ const ResetPasswordForm = () => {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       toast({
         title: "Password too short",
-        description: "Password must be at least 6 characters long.",
+        description: "Password must be at least 8 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Strong password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;
+    if (!passwordRegex.test(password)) {
+      toast({
+        title: "Password too weak",
+        description: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
         variant: "destructive",
       });
       return;
@@ -155,7 +166,7 @@ const ResetPasswordForm = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       className="h-11"
-                      minLength={6}
+                      minLength={8}
                     />
                   </div>
                   
@@ -169,7 +180,7 @@ const ResetPasswordForm = () => {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       className="h-11"
-                      minLength={6}
+                      minLength={8}
                     />
                   </div>
                   

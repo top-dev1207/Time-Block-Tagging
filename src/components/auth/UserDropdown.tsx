@@ -65,7 +65,7 @@ const UserDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-full justify-start px-3">
+        <Button className="relative h-10 w-full justify-start px-3">
           <div className="flex items-center gap-3 w-full">
             <Avatar className="h-8 w-8">
               <AvatarImage src={session.user.image || ""} />

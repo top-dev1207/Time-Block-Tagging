@@ -81,7 +81,7 @@ const VerifyRequestContent = () => {
 
                 <div className="flex flex-col gap-3">
                   <Button 
-                    variant="outline"
+                    // variant="outline"
                     onClick={() => window.location.reload()}
                     className="w-full h-11"
                   >
@@ -90,7 +90,7 @@ const VerifyRequestContent = () => {
                   
                   <Link href="/login">
                     <Button 
-                      variant="ghost"
+                      // variant="ghost"
                       className="w-full h-11"
                     >
                       <ArrowLeft className="h-4 w-4 mr-2" />
