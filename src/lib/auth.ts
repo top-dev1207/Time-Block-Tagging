@@ -6,6 +6,15 @@ import AzureADProvider from "next-auth/providers/azure-ad";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+// Add debugging utility
+function logError(context: string, error: any) {
+  console.error(`[AUTH_ERROR] ${context}:`, {
+    message: error?.message,
+    code: error?.code,
+    stack: error?.stack?.slice(0, 200)
+  });
+}
+
 async function refreshAccessToken(token: any) {
   try {
     const url = "https://oauth2.googleapis.com/token";
@@ -130,10 +139,98 @@ export const authOptions: NextAuthOptions = {
         userName: user.name 
       });
 
-      // Allow Google OAuth signin for now (will handle user creation in JWT callback)
+      // Handle Google OAuth user creation/update
       if (account?.provider === "google") {
-        console.log("Allowing Google OAuth for:", user.email);
-        return true;
+        console.log("Processing Google OAuth signin for:", user.email);
+        
+        try {
+          // Check if user already exists
+          let existingUser = await prisma.users.findUnique({
+            where: { email: user.email! }
+          });
+
+          if (existingUser) {
+            console.log("Existing Google user found:", existingUser.email);
+            // Update user info if needed
+            if (!existingUser.emailVerified) {
+              await prisma.users.update({
+                where: { email: user.email! },
+                data: { 
+                  emailVerified: new Date(),
+                  name: user.name || existingUser.name,
+                  image: user.image || existingUser.image
+                }
+              });
+              console.log("Updated email verification for existing user");
+            }
+            
+            // Check if Google account is linked
+            const existingAccount = await prisma.accounts.findFirst({
+              where: {
+                userId: existingUser.id,
+                provider: "google"
+              }
+            });
+
+            if (!existingAccount) {
+              // Link Google account
+              await prisma.accounts.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  refresh_token: account.refresh_token,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state,
+                }
+              });
+              console.log("Linked Google account to existing user");
+            }
+          } else {
+            console.log("Creating new Google user:", user.email);
+            // Create new user
+            existingUser = await prisma.users.create({
+              data: {
+                email: user.email!,
+                name: user.name || "",
+                image: user.image || null,
+                emailVerified: new Date(), // Google emails are pre-verified
+                company: "",
+              }
+            });
+            console.log("New Google user created:", existingUser.id);
+
+            // Create the account record
+            await prisma.accounts.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+                session_state: account.session_state,
+              }
+            });
+            console.log("Created Google account record for new user");
+          }
+          
+          return true;
+        } catch (error) {
+          logError("Google OAuth user creation/update", error);
+          // Don't block the login completely, but log the error
+          console.error("Database operation failed, but allowing login to proceed");
+          return true;
+        }
       }
       
       // Allow Azure AD OAuth signin for now
@@ -149,29 +246,70 @@ export const authOptions: NextAuthOptions = {
         hasAccount: !!account, 
         hasUser: !!user, 
         provider: account?.provider,
-        userId: user?.id 
+        userId: user?.id,
+        tokenEmail: token?.email 
       });
 
       // Initial sign in
       if (account && user) {
         console.log("JWT: Initial sign in for provider:", account.provider);
         
-        // Handle Google OAuth user creation/retrieval
+        // Handle Google OAuth - get user from database
         if (account.provider === "google") {
-          console.log("Handling Google OAuth in JWT callback");
-          // For now, just create a token with user info (skip DB operations)
-          return {
-            ...token,
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            company: "",
-            provider: "google",
-            accessToken: account.access_token,
-            refreshToken: account.refresh_token,
-            accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
-          };
+          console.log("Handling Google OAuth in JWT callback for:", user.email);
+          
+          try {
+            // Get the user from database to ensure we have the correct ID and info
+            const dbUser = await prisma.users.findUnique({
+              where: { email: user.email! }
+            });
+
+            if (dbUser) {
+              console.log("Found database user for Google OAuth:", dbUser.id);
+              return {
+                ...token,
+                id: dbUser.id,
+                email: dbUser.email,
+                name: dbUser.name,
+                image: dbUser.image,
+                company: dbUser.company || "",
+                provider: "google",
+                accessToken: account.access_token,
+                refreshToken: account.refresh_token,
+                accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
+              };
+            } else {
+              console.error("Database user not found for Google OAuth:", user.email);
+              // Fallback to user object data
+              return {
+                ...token,
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                image: user.image,
+                company: "",
+                provider: "google",
+                accessToken: account.access_token,
+                refreshToken: account.refresh_token,
+                accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
+              };
+            }
+          } catch (error) {
+            logError("JWT callback database lookup", error);
+            // Fallback to user object data
+            return {
+              ...token,
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              company: "",
+              provider: "google",
+              accessToken: account.access_token,
+              refreshToken: account.refresh_token,
+              accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
+            };
+          }
         }
 
         // Default token creation for other providers
