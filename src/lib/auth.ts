@@ -45,7 +45,9 @@ async function refreshAccessToken(token: any) {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // Temporarily disable adapter to fix OAuth issues
+  // adapter: PrismaAdapter(prisma),
+  debug: true, // Enable debug mode to see detailed logs
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -122,77 +124,61 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Handle Google OAuth signup/login
-      if (account?.provider === "google") {
-        try {
-          // Check if user already exists
-          const existingUser = await prisma.users.findUnique({
-            where: { email: user.email! }
-          });
+      console.log("NextAuth signIn callback triggered:", { 
+        provider: account?.provider, 
+        userEmail: user.email,
+        userName: user.name 
+      });
 
-          if (!existingUser) {
-            // Create new user for Google signup
-            const newUser = await prisma.users.create({
-              data: {
-                email: user.email!,
-                name: user.name || "",
-                image: user.image || "",
-                company: "", // Will be updated later
-                emailVerified: new Date(), // Google accounts are pre-verified
-                provider: "google",
-              }
-            });
-            user.id = newUser.id;
-          } else {
-            user.id = existingUser.id;
-            (user as any).company = existingUser.company;
-          }
-          return true;
-        } catch (error) {
-          console.error("Google sign-in error:", error);
-          return false;
-        }
+      // Allow Google OAuth signin for now (will handle user creation in JWT callback)
+      if (account?.provider === "google") {
+        console.log("Allowing Google OAuth for:", user.email);
+        return true;
       }
       
-      // Handle Azure AD OAuth signup/login
+      // Allow Azure AD OAuth signin for now
       if (account?.provider === "azure-ad") {
-        try {
-          const existingUser = await prisma.users.findUnique({
-            where: { email: user.email! }
-          });
-
-          if (!existingUser) {
-            const newUser = await prisma.users.create({
-              data: {
-                email: user.email!,
-                name: user.name || "",
-                image: user.image || "",
-                company: "", // Will be updated later
-                emailVerified: new Date(), // Azure accounts are pre-verified
-                provider: "azure-ad",
-              }
-            });
-            user.id = newUser.id;
-          } else {
-            user.id = existingUser.id;
-            (user as any).company = existingUser.company;
-          }
-          return true;
-        } catch (error) {
-          console.error("Azure AD sign-in error:", error);
-          return false;
-        }
+        console.log("Allowing Azure AD OAuth for:", user.email);
+        return true;
       }
 
       return true;
     },
     async jwt({ token, user, account }) {
+      console.log("NextAuth JWT callback:", { 
+        hasAccount: !!account, 
+        hasUser: !!user, 
+        provider: account?.provider,
+        userId: user?.id 
+      });
+
       // Initial sign in
       if (account && user) {
+        console.log("JWT: Initial sign in for provider:", account.provider);
+        
+        // Handle Google OAuth user creation/retrieval
+        if (account.provider === "google") {
+          console.log("Handling Google OAuth in JWT callback");
+          // For now, just create a token with user info (skip DB operations)
+          return {
+            ...token,
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            company: "",
+            provider: "google",
+            accessToken: account.access_token,
+            refreshToken: account.refresh_token,
+            accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
+          };
+        }
+
+        // Default token creation for other providers
         return {
           ...token,
           id: user.id,
-          company: (user as any)?.company,
+          company: (user as any)?.company || "",
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
@@ -208,10 +194,22 @@ export const authOptions: NextAuthOptions = {
       return await refreshAccessToken(token);
     },
     async session({ session, token }) {
+      console.log("NextAuth session callback:", { 
+        hasToken: !!token, 
+        tokenId: token?.id,
+        tokenEmail: token?.email,
+        sessionUserEmail: session?.user?.email 
+      });
+
       if (token) {
         session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = token.image as string;
         (session.user as any).company = token.company as string;
+        (session.user as any).provider = token.provider as string;
         session.accessToken = token.accessToken as string;
+        console.log("Session created for user:", session.user.id, "with email:", session.user.email);
       }
       return session;
     },

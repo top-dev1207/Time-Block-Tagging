@@ -96,16 +96,13 @@ const LoginForm = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const result = await signIn("google", { 
+      // Use redirect: true for Google OAuth (more reliable)
+      await signIn("google", { 
         callbackUrl: callbackUrl,
-        redirect: false 
+        redirect: true 
       });
-      
-      if (result?.ok) {
-        // Calendar sync will be triggered automatically by useCalendarSync hook
-        router.push(callbackUrl);
-      }
     } catch (error) {
+      console.error("Google sign-in error:", error);
       toast({
         title: "Error",
         description: "Failed to sign in with Google.",
