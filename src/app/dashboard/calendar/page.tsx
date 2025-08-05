@@ -2,6 +2,7 @@
 
 import FullCalendarComponent from "@/components/calendar/FullCalendarComponent";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { usePageLoading } from "@/hooks/usePageLoading";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, BarChart3, TrendingUp, Clock } from "lucide-react";
@@ -25,6 +26,7 @@ const categories = [
 ];
 
 const CalendarView = () => {
+  usePageLoading();
   const { data: session, status } = useSession();
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { usePageLoading } from "@/hooks/usePageLoading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -71,6 +72,7 @@ const skillRadarData = [
 ];
 
 const AnalyticsPage = () => {
+  usePageLoading();
   const customTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (

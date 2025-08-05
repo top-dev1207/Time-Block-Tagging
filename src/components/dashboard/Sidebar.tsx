@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { signOut } from "next-auth/react";
 import { useAuthStore } from "@/store/authStore";
+import { useLoading } from "./LoadingProvider";
 
 const sidebarItems = [
   {
@@ -98,6 +99,7 @@ const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
+  const { setIsLoading } = useLoading();
 
   const isActive = (path: string) => pathname === path;
 
@@ -184,7 +186,12 @@ const Sidebar = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setIsMobileOpen(false)}
+                  onClick={() => {
+                    setIsMobileOpen(false);
+                    if (!isActive(item.href)) {
+                      setIsLoading(true);
+                    }
+                  }}
                   className={cn(
                     "flex items-center rounded-lg transition-colors group relative",
                     isCollapsed 

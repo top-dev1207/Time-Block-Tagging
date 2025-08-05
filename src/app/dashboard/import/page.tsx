@@ -19,8 +19,10 @@ import {
   Laptop
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePageLoading } from "@/hooks/usePageLoading";
 
 const ImportPage = () => {
+  usePageLoading();
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);

@@ -26,6 +26,8 @@ const SignupPage = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldTouched, setFieldTouched] = useState<Record<string, boolean>>({});
   const router = useRouter();
   const { toast } = useToast();
 
@@ -35,26 +37,199 @@ const SignupPage = () => {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => ({ ...prev, [field]: "" }));
+    }
+    // Validate on change for touched fields
+    if (fieldTouched[field]) {
+      validateField(field, value);
+    }
+  };
+
+  const handleBlur = (field: string) => {
+    setFieldTouched(prev => ({ ...prev, [field]: true }));
+    validateField(field, formData[field as keyof typeof formData]);
+  };
+
+  const validateField = (field: string, value: any) => {
+    let error = "";
+    
+    switch (field) {
+      case "name":
+        if (!value || typeof value !== "string") {
+          error = "Name is required";
+        } else if (value.trim().length < 2) {
+          error = "Name must be at least 2 characters";
+        }
+        break;
+        
+      case "company":
+        if (!value || typeof value !== "string" || !value.trim()) {
+          error = "Company is required";
+        }
+        break;
+        
+      case "email":
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value || typeof value !== "string" || !emailRegex.test(value)) {
+          error = "Enter a valid email (e.g., you@company.com)";
+        }
+        break;
+        
+      case "password":
+        if (typeof value === "string") {
+          if (value.length < 8) {
+            error = "Password must be at least 8 characters";
+          } else if (!/[A-Z]/.test(value)) {
+            error = "Add at least one uppercase letter";
+          } else if (!/[a-z]/.test(value)) {
+            error = "Add at least one lowercase letter";
+          } else if (!/\d/.test(value)) {
+            error = "Add at least one number";
+          } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+            error = "Add at least one special character";
+          }
+        }
+        break;
+        
+      case "confirmPassword":
+        if (value !== formData.password) {
+          error = "Passwords don't match";
+        }
+        break;
+        
+      case "acceptTerms":
+        if (!value) {
+          error = "You must accept the terms";
+        }
+        break;
+    }
+    
+    setFieldErrors(prev => ({ ...prev, [field]: error }));
+    return !error;
+  };
+
+  const validateForm = () => {
+    // Name validation
+    if (!formData.name.trim()) {
+      toast({
+        title: "Name is required",
+        description: "💡 Solution: Please enter your full name (e.g., John Smith)",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (formData.name.trim().length < 2) {
+      toast({
+        title: "Name too short",
+        description: "💡 Solution: Enter at least 2 characters for your name",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Company validation
+    if (!formData.company.trim()) {
+      toast({
+        title: "Company is required",
+        description: "💡 Solution: Enter your company name (e.g., ACME Corp)",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Invalid email format",
+        description: "💡 Solution: Enter a valid work email (e.g., you@company.com)",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Password strength validation
+    if (formData.password.length < 8) {
+      toast({
+        title: "Password too short",
+        description: "💡 Solution: Create a password with at least 8 characters",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    const hasUpperCase = /[A-Z]/.test(formData.password);
+    const hasLowerCase = /[a-z]/.test(formData.password);
+    const hasNumbers = /\d/.test(formData.password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
+
+    if (!hasUpperCase) {
+      toast({
+        title: "Password needs uppercase",
+        description: "💡 Solution: Add at least one uppercase letter (A-Z)",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!hasLowerCase) {
+      toast({
+        title: "Password needs lowercase", 
+        description: "💡 Solution: Add at least one lowercase letter (a-z)",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!hasNumbers) {
+      toast({
+        title: "Password needs numbers",
+        description: "💡 Solution: Add at least one number (0-9)",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!hasSpecialChar) {
+      toast({
+        title: "Password needs special character",
+        description: "💡 Solution: Add at least one special character (!@#$%^&*)",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Password match validation
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "💡 Solution: Make sure both password fields contain the exact same password",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Terms acceptance validation
+    if (!formData.acceptTerms) {
+      toast({
+        title: "Terms not accepted",
+        description: "💡 Solution: Check the box to accept our Terms of Service and Privacy Policy",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Passwords don't match", 
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.acceptTerms) {
-      toast({
-        title: "Accept terms",
-        description: "Please accept the terms and conditions to continue.",
-        variant: "destructive",
-      });
+    // Validate form before submission
+    if (!validateForm()) {
       return;
     }
 
@@ -67,9 +242,9 @@ const SignupPage = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          company: formData.company,
+          name: formData.name.trim(),
+          email: formData.email.toLowerCase().trim(),
+          company: formData.company.trim(),
           password: formData.password,
         }),
       });
@@ -77,12 +252,34 @@ const SignupPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Something went wrong");
+        // Provide helpful error messages based on specific errors
+        if (data.error?.includes("already exists")) {
+          toast({
+            title: "Email already registered",
+            description: "💡 Solution: Try logging in instead or use a different email address",
+            variant: "destructive",
+          });
+        } else if (data.details) {
+          // Handle validation errors from server
+          const firstError = data.details[0];
+          toast({
+            title: "Validation error",
+            description: `💡 Solution: ${firstError.message}`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Registration failed",
+            description: data.error || "💡 Solution: Please check your information and try again",
+            variant: "destructive",
+          });
+        }
+        return;
       }
 
       toast({
-        title: "Account created successfully!",
-        description: "Please sign in with your new account.",
+        title: "Account created successfully! 🎉",
+        description: "Welcome to TimeROI! Signing you in...",
       });
 
       // Automatically sign in the user after successful signup
@@ -100,8 +297,8 @@ const SignupPage = () => {
 
     } catch (error) {
       toast({
-        title: "Error creating account",
-        description: error instanceof Error ? error.message : "Something went wrong",
+        title: "Connection error",
+        description: "💡 Solution: Check your internet connection and try again",
         variant: "destructive",
       });
     } finally {
@@ -251,9 +448,13 @@ const SignupPage = () => {
                         placeholder="John Smith"
                         value={formData.name}
                         onChange={(e) => handleInputChange("name", e.target.value)}
+                        onBlur={() => handleBlur("name")}
                         required
-                        className="h-10"
+                        className={`h-10 ${fieldErrors.name ? "border-red-500" : ""}`}
                       />
+                      {fieldErrors.name && (
+                        <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="company" className="text-gray-700">Company</Label>
@@ -262,9 +463,13 @@ const SignupPage = () => {
                         placeholder="ACME Corp"
                         value={formData.company}
                         onChange={(e) => handleInputChange("company", e.target.value)}
+                        onBlur={() => handleBlur("company")}
                         required
-                        className="h-10"
+                        className={`h-10 ${fieldErrors.company ? "border-red-500" : ""}`}
                       />
+                      {fieldErrors.company && (
+                        <p className="text-xs text-red-500 mt-1">{fieldErrors.company}</p>
+                      )}
                     </div>
                   </div>
                   
@@ -276,9 +481,13 @@ const SignupPage = () => {
                       placeholder="you@company.com"
                       value={formData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
+                      onBlur={() => handleBlur("email")}
                       required
-                      className="h-10"
+                      className={`h-10 ${fieldErrors.email ? "border-red-500" : ""}`}
                     />
+                    {fieldErrors.email && (
+                      <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
@@ -289,9 +498,37 @@ const SignupPage = () => {
                       placeholder="Create a strong password"
                       value={formData.password}
                       onChange={(e) => handleInputChange("password", e.target.value)}
+                      onBlur={() => handleBlur("password")}
                       required
-                      className="h-10"
+                      className={`h-10 ${fieldErrors.password ? "border-red-500" : ""}`}
                     />
+                    {fieldErrors.password && (
+                      <p className="text-xs text-red-500 mt-1">💡 {fieldErrors.password}</p>
+                    )}
+                    {formData.password && !fieldErrors.password && (
+                      <div className="mt-2 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`h-1 w-1 rounded-full ${formData.password.length >= 8 ? "bg-green-500" : "bg-gray-300"}`} />
+                          <span className={`text-xs ${formData.password.length >= 8 ? "text-green-600" : "text-gray-400"}`}>8+ characters</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className={`h-1 w-1 rounded-full ${/[A-Z]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"}`} />
+                          <span className={`text-xs ${/[A-Z]/.test(formData.password) ? "text-green-600" : "text-gray-400"}`}>Uppercase letter</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className={`h-1 w-1 rounded-full ${/[a-z]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"}`} />
+                          <span className={`text-xs ${/[a-z]/.test(formData.password) ? "text-green-600" : "text-gray-400"}`}>Lowercase letter</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className={`h-1 w-1 rounded-full ${/\d/.test(formData.password) ? "bg-green-500" : "bg-gray-300"}`} />
+                          <span className={`text-xs ${/\d/.test(formData.password) ? "text-green-600" : "text-gray-400"}`}>Number</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className={`h-1 w-1 rounded-full ${/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"}`} />
+                          <span className={`text-xs ${/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? "text-green-600" : "text-gray-400"}`}>Special character</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
@@ -302,16 +539,24 @@ const SignupPage = () => {
                       placeholder="Confirm your password"
                       value={formData.confirmPassword}
                       onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                      onBlur={() => handleBlur("confirmPassword")}
                       required
-                      className="h-10"
+                      className={`h-10 ${fieldErrors.confirmPassword ? "border-red-500" : ""}`}
                     />
+                    {fieldErrors.confirmPassword && (
+                      <p className="text-xs text-red-500 mt-1">{fieldErrors.confirmPassword}</p>
+                    )}
                   </div>
 
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="terms"
                       checked={formData.acceptTerms}
-                      onCheckedChange={(checked) => handleInputChange("acceptTerms", checked as boolean)}
+                      onCheckedChange={(checked) => {
+                        handleInputChange("acceptTerms", checked as boolean);
+                        handleBlur("acceptTerms");
+                      }}
+                      className={fieldErrors.acceptTerms ? "border-red-500" : ""}
                     />
                     <Label htmlFor="terms" className="text-sm text-gray-600">
                       I agree to the{" "}
