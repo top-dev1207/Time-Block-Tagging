@@ -1,6 +1,6 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Create transporter - will be configured per environment in sendEmail function
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface EmailOptions {
   to: string;
@@ -11,51 +11,21 @@ interface EmailOptions {
 
 export async function sendEmail({ to, subject, html, text }: EmailOptions) {
   try {
-    // In development, create a test account and use Ethereal Email
-    if (process.env.NODE_ENV === 'development') {
-      const testAccount = await nodemailer.createTestAccount();
-      const devTransporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
-        },
-      });
-      
-      const info = await devTransporter.sendMail({
-        from: '"TimeROI Team" <noreply@timeroi.com>',
-        to,
-        subject,
-        text: text || html.replace(/<[^>]*>/g, ''),
-        html,
-      });
-      
-      console.log('Message sent: %s', info.messageId);
-      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-      return { success: true, messageId: info.messageId };
+    const { data, error } = await resend.emails.send({
+      from: `TimeROI Team <${process.env.EMAIL_FROM}>`,
+      to: [to],
+      subject: subject,
+      html: html,
+      text: text,
+    });
+
+    if (error) {
+      console.error('Resend email error:', error);
+      return { success: false, error };
     }
-    
-    // Production email sending using Gmail
-    const productionTransporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_FROM || 'noreply@gmail.com',
-        pass: process.env.EMAIL_PASSWORD || ''
-      }
-    });
-    
-    const info = await productionTransporter.sendMail({
-      from: '"TimeROI Team" <noreply@timeroi.com>',
-      to,
-      subject,
-      text: text || html.replace(/<[^>]*>/g, ''),
-      html,
-    });
-    
-    console.log('Message sent: %s', info.messageId);
-    return { success: true, messageId: info.messageId };
+
+    console.log('Email sent successfully via Resend:', data?.id);
+    return { success: true, messageId: data?.id };
   } catch (error) {
     console.error('Email sending failed:', error);
     return { success: false, error };
