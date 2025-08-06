@@ -61,7 +61,7 @@ interface WorksState {
 
 export const useWorksStore = create<WorksState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Initial state
       timeBlocks: [],
       currentWeekBlocks: [],

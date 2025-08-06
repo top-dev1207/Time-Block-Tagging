@@ -2,5 +2,16 @@
   "extends": [
     "next/core-web-vitals",
     "next/typescript"
-  ]
+  ],
+  "ignorePatterns": [
+    "src/prisma/client/**/*",
+    "prisma/generated/**/*",
+    ".next/**/*",
+    "out/**/*"
+  ],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "react/no-unescaped-entities": "off"
+  }
 }

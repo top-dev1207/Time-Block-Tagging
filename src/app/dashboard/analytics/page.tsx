@@ -15,9 +15,6 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
@@ -26,12 +23,10 @@ import {
 } from "recharts";
 import { 
   TrendingUp, 
-  TrendingDown, 
   Clock, 
   Target, 
   AlertTriangle, 
   CheckCircle,
-  Calendar,
   BarChart3,
   Zap
 } from "lucide-react";

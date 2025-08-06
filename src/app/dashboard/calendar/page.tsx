@@ -3,29 +3,14 @@
 import FullCalendarComponent from "@/components/calendar/FullCalendarComponent";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Calendar, BarChart3, TrendingUp, Clock } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 
-const valueTiers = [
-  { value: "10K", label: "£10K - Transformational", color: "tier-10k" },
-  { value: "1K", label: "£1K - High-leverage", color: "tier-1k" },
-  { value: "100", label: "£100 - Operational", color: "tier-100" },
-  { value: "10", label: "£10 - Admin", color: "tier-10" }
-];
 
-const categories = [
-  { value: "REV", label: "Revenue", color: "revenue" },
-  { value: "REC", label: "Recovery", color: "recovery" },
-  { value: "REL", label: "Relationships", color: "relationships" },
-  { value: "ADM", label: "Admin", color: "tier-10" },
-  { value: "DEL", label: "Delivery", color: "tier-100" },
-  { value: "MTG", label: "Meetings", color: "tier-100" }
-];
 
 const CalendarView = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   return (
     <div className="space-y-6">
