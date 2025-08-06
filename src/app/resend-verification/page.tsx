@@ -45,7 +45,7 @@ const ResendVerificationPage = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to send verification email",

@@ -81,7 +81,7 @@ export function useCalendarSync() {
     if (status === "authenticated" && session?.accessToken && !syncState.events) {
       syncCalendarEvents(false);
     }
-  }, [status, session?.accessToken]);
+  }, [status, session?.accessToken, syncCalendarEvents, syncState.events]);
 
   return {
     ...syncState,

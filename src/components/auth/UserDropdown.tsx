@@ -38,7 +38,7 @@ const UserDropdown = () => {
       });
       
       router.push("/login");
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to sign out. Please try again.",

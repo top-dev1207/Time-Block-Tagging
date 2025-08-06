@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import crypto from "crypto";
 
 const resendVerificationSchema = z.object({
   email: z.string().email("Invalid email format"),

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 const NotFound = () => {
   const pathname = usePathname();
@@ -18,9 +19,9 @@ const NotFound = () => {
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4 text-primary">404</h1>
         <p className="text-xl text-primary/70 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-primary hover:text-primary/80 underline font-medium">
+        <Link href="/" className="text-primary hover:text-primary/80 underline font-medium">
           Return to Home
-        </a>
+        </Link>
       </div>
     </div>
   );

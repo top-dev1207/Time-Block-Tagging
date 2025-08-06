@@ -139,7 +139,7 @@ const VerifyCodeForm = () => {
         setCode(["", "", "", "", "", ""]);
         inputRefs.current[0]?.focus();
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Connection error",
         description: "Failed to verify code. Please try again.",
@@ -192,7 +192,7 @@ const VerifyCodeForm = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Connection error",
         description: "Failed to resend verification code. Please try again.",

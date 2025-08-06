@@ -68,7 +68,7 @@ const ForgotPasswordPage = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to send verification code",
@@ -116,7 +116,7 @@ const ForgotPasswordPage = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to verify code",
@@ -155,7 +155,7 @@ const ForgotPasswordPage = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to resend verification code",

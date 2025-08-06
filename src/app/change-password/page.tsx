@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
 const ChangePasswordPage = () => {
-  const { data: session } = useSession();
+  useSession();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
@@ -109,7 +109,7 @@ const ChangePasswordPage = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to change password",

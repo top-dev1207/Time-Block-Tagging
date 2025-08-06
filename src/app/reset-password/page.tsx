@@ -93,7 +93,7 @@ const ResetPasswordForm = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to reset password",

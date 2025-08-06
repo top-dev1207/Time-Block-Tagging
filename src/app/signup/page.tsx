@@ -5,14 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, ArrowLeft, TrendingUp, Target, BarChart3, Timer, Award, Lightbulb, Users, Activity, PieChart, DollarSign, Mail } from "lucide-react";
+import { Clock, ArrowLeft, TrendingUp, Target, BarChart3, Timer, Award, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 
 const SignupPage = () => {
@@ -285,7 +283,7 @@ const SignupPage = () => {
       // Redirect to code verification page
       router.push(`/verify-code?email=${encodeURIComponent(formData.email)}`);
 
-    } catch (error) {
+    } catch {
       toast({
         title: "Connection error",
         description: "💡 Solution: Check your internet connection and try again",

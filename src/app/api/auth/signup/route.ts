@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import crypto from "crypto";
 
 const signupSchema = z.object({
   name: z.string().min(1, "Name is required"),

@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { MessageCircle, Star, Send } from "lucide-react";
+import { MessageCircle, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FeedbackWidgetProps {
@@ -62,7 +62,7 @@ export function FeedbackWidget({ variant = "button", className }: FeedbackWidget
       setRating("");
       setIsOpen(false);
 
-    } catch (error) {
+    } catch {
       toast({
         title: "Submission failed",
         description: "Please try again or contact support directly.",

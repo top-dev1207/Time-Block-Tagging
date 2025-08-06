@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Clock, ArrowLeft, TrendingUp, Target, BarChart3, Timer, Award, Lightbulb, Users, Activity, PieChart, DollarSign, Mail } from "lucide-react";
+import { Clock, ArrowLeft, TrendingUp, Target, BarChart3, Timer, Award } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -82,7 +82,7 @@ const LoginForm = () => {
         // Redirect to original destination or dashboard
         router.push(callbackUrl);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "An error occurred during sign in.",
@@ -101,8 +101,8 @@ const LoginForm = () => {
         callbackUrl: callbackUrl,
         redirect: true 
       });
-    } catch (error) {
-      console.error("Google sign-in error:", error);
+    } catch {
+      console.error("Google sign-in error");
       toast({
         title: "Error",
         description: "Failed to sign in with Google.",
@@ -123,7 +123,7 @@ const LoginForm = () => {
       if (result?.ok) {
         router.push(callbackUrl);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to sign in with Microsoft.",

@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Loader2, RefreshCw, Tag, Calendar as CalendarIcon } from "lucide-react";
 
 interface CalendarEvent {
@@ -106,8 +105,8 @@ export default function FullCalendarComponent() {
         title: "Calendar Synced",
         description: `Successfully loaded ${transformedEvents.length} events from your Google Calendar.`,
       });
-    } catch (error) {
-      console.error("Error loading calendar events:", error);
+    } catch {
+      console.error("Error loading calendar events");
       toast({
         title: "Sync Failed",
         description: "Failed to load calendar events. Please check your authentication and try again.",

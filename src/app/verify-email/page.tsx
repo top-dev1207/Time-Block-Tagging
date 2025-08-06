@@ -57,7 +57,7 @@ const VerifyEmailForm = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       setIsError(true);
       toast({
         title: "Verification Error",
@@ -104,7 +104,7 @@ const VerifyEmailForm = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Connection Error",
         description: "Failed to resend verification email. Please try again.",
