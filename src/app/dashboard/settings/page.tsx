@@ -24,10 +24,8 @@ import {
   Smartphone
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { usePageLoading } from "@/hooks/usePageLoading";
 
 const SettingsPage = () => {
-  usePageLoading();
   const [userData, setUserData] = useState({
     name: "Demo User",
     email: "demo@timeroi.com",

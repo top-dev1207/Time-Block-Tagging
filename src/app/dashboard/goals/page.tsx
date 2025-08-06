@@ -19,7 +19,6 @@ import {
   Line
 } from "recharts";
 import { TrendingUp, TrendingDown, Clock, Target, AlertTriangle, CheckCircle } from "lucide-react";
-import { usePageLoading } from "@/hooks/usePageLoading";
 
 // Mock data for time allocation
 const timeAllocationData = [
@@ -74,7 +73,6 @@ const roiMetrics = [
 ];
 
 const DashboardOverview = () => {
-  usePageLoading();
   const customTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
