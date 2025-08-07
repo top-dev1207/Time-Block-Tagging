@@ -60,7 +60,7 @@ export default function FullCalendarComponent() {
 
   const loadCalendarEvents = async () => {
     // Only allow authenticated users to load calendar events
-    if (!session?.accessToken || status !== "authenticated") {
+    if (!session?.user || status !== "authenticated") {
       toast({
         title: "Authentication Required",
         description: "Please sign in to view your calendar events.",
@@ -71,21 +71,28 @@ export default function FullCalendarComponent() {
 
     setIsLoading(true);
     try {
-      // Create Google Calendar API instance with user's access token
-      const calendarAPI = new GoogleCalendarAPI(session.accessToken);
-      
-      // Get events for current month (only this user's events)
+      // Get events for current month using our API endpoint
       const startDate = new Date();
       startDate.setDate(1); // First day of current month
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + 1);
       endDate.setDate(0); // Last day of current month
 
-      // This will only fetch events from the authenticated user's Google Calendar
-      const googleEvents = await calendarAPI.getEventsForDateRange('primary', startDate, endDate);
-      
+      const params = new URLSearchParams({
+        timeMin: startDate.toISOString(),
+        timeMax: endDate.toISOString(),
+        maxResults: '100'
+      });
+
+      const response = await fetch(`/api/calendar/events?${params}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch calendar events');
+      }
+
       // Transform Google Calendar events to FullCalendar format
-      const transformedEvents: CalendarEvent[] = googleEvents.map((gEvent) => ({
+      const transformedEvents: CalendarEvent[] = data.events.map((gEvent: any) => ({
         id: gEvent.id,
         title: gEvent.summary || 'Untitled Event',
         start: gEvent.start.dateTime || gEvent.start.date || '',
@@ -105,11 +112,12 @@ export default function FullCalendarComponent() {
         title: "Calendar Synced",
         description: `Successfully loaded ${transformedEvents.length} events from your Google Calendar.`,
       });
-    } catch {
-      console.error("Error loading calendar events");
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error("Error loading calendar events:", err.message);
       toast({
         title: "Sync Failed",
-        description: "Failed to load calendar events. Please check your authentication and try again.",
+        description: err.message || "Failed to load calendar events. Please check your authentication and try again.",
         variant: "destructive",
       });
     } finally {
@@ -117,12 +125,12 @@ export default function FullCalendarComponent() {
     }
   };
 
-  // Load events only when user is authenticated and has access token
+  // Load events only when user is authenticated
   useEffect(() => {
-    if (status === "authenticated" && session?.accessToken) {
+    if (status === "authenticated" && session?.user) {
       loadCalendarEvents();
     }
-  }, [status, session?.accessToken]);
+  }, [status, session?.user]);
 
   const handleEventClick = (clickInfo: any) => {
     const event = events.find(e => e.id === clickInfo.event.id);

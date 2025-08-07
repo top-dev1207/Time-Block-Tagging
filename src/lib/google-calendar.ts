@@ -31,6 +31,16 @@ interface CalendarListResponse {
   items: CalendarEvent[];
 }
 
+export interface CreateEventData {
+  title: string;
+  description?: string;
+  startTime: Date;
+  endTime: Date;
+  location?: string;
+  attendees?: string[];
+  timeZone?: string;
+}
+
 export class GoogleCalendarAPI {
   private accessToken: string;
 
@@ -138,6 +148,70 @@ export class GoogleCalendarAPI {
       attendeeCount: event.attendees?.length || 0,
       creator: event.creator?.email,
     };
+  }
+
+  // Create a new calendar event
+  async createEvent(calendarId: string = 'primary', eventData: CreateEventData): Promise<CalendarEvent> {
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`;
+    
+    const event = {
+      summary: eventData.title,
+      description: eventData.description,
+      start: {
+        dateTime: eventData.startTime.toISOString(),
+        timeZone: eventData.timeZone || 'UTC',
+      },
+      end: {
+        dateTime: eventData.endTime.toISOString(),
+        timeZone: eventData.timeZone || 'UTC',
+      },
+      location: eventData.location,
+      attendees: eventData.attendees?.map(email => ({ email })),
+    };
+
+    return this.makeRequest(url, {
+      method: 'POST',
+      body: JSON.stringify(event),
+    });
+  }
+
+  // Update an existing calendar event
+  async updateEvent(calendarId: string = 'primary', eventId: string, eventData: Partial<CreateEventData>): Promise<CalendarEvent> {
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`;
+    
+    const event: any = {};
+    if (eventData.title) event.summary = eventData.title;
+    if (eventData.description) event.description = eventData.description;
+    if (eventData.location) event.location = eventData.location;
+    if (eventData.startTime) {
+      event.start = {
+        dateTime: eventData.startTime.toISOString(),
+        timeZone: eventData.timeZone || 'UTC',
+      };
+    }
+    if (eventData.endTime) {
+      event.end = {
+        dateTime: eventData.endTime.toISOString(),
+        timeZone: eventData.timeZone || 'UTC',
+      };
+    }
+    if (eventData.attendees) {
+      event.attendees = eventData.attendees.map(email => ({ email }));
+    }
+
+    return this.makeRequest(url, {
+      method: 'PUT',
+      body: JSON.stringify(event),
+    });
+  }
+
+  // Delete a calendar event
+  async deleteEvent(calendarId: string = 'primary', eventId: string): Promise<void> {
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`;
+    
+    await this.makeRequest(url, {
+      method: 'DELETE',
+    });
   }
 }
 
