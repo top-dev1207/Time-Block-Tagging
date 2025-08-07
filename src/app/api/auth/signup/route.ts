@@ -34,8 +34,70 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
+      // If user exists but email is not verified, allow re-signup with new verification code
+      if (!existingUser.emailVerified) {
+        // Generate new verification code and update existing user
+        const newVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const newVerificationCodeExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+        await prisma.users.update({
+          where: { email },
+          data: {
+            name,
+            company,
+            password: await bcrypt.hash(password, 12),
+            verificationCode: newVerificationCode,
+            verificationCodeExpiry: newVerificationCodeExpiry,
+          }
+        });
+
+        // Send new verification code
+        try {
+          const { sendEmail, generateVerificationCodeEmailHtml, generateVerificationCodeEmailText } = await import("@/lib/email");
+          
+          const emailResult = await sendEmail({
+            to: email,
+            subject: "Your TimeROI verification code",
+            html: generateVerificationCodeEmailHtml(name, newVerificationCode),
+            text: generateVerificationCodeEmailText(name, newVerificationCode)
+          });
+          
+          if (emailResult.success) {
+            console.log(`New verification code sent successfully to existing unverified user: ${email}`);
+            console.log(`Message ID: ${emailResult.messageId}`);
+          } else {
+            console.error(`Failed to send verification email to existing user: ${email}`, emailResult.error);
+          }
+          
+          console.log(`New verification code: ${newVerificationCode} (expires in 5 minutes)`);
+        } catch (emailError) {
+          console.error("Failed to send verification email for existing user:", {
+            email: email,
+            error: emailError?.message || emailError,
+            stack: emailError?.stack
+          });
+        }
+
+        return NextResponse.json(
+          { 
+            message: "Account exists but was not verified. A new verification code has been sent to your email.",
+            user: { 
+              id: existingUser.id, 
+              name, 
+              email, 
+              company, 
+              createdAt: existingUser.createdAt 
+            },
+            requiresVerification: true,
+            isExistingUser: true
+          },
+          { status: 200 }
+        );
+      }
+
+      // If user exists and is verified
       return NextResponse.json(
-        { error: "User with this email already exists" },
+        { error: "User with this email already exists and is verified. Please use the login page." },
         { status: 409 }
       );
     }

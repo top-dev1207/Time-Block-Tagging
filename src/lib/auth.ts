@@ -111,7 +111,37 @@ export const authOptions: NextAuthOptions = {
 
         // Check if email is verified
         if (!user.emailVerified) {
-          throw new Error("Please verify your email before signing in");
+          // Generate new verification code for unverified user attempting to login
+          const newVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+          const newVerificationCodeExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+          await prisma.users.update({
+            where: { email: credentials.email },
+            data: {
+              verificationCode: newVerificationCode,
+              verificationCodeExpiry: newVerificationCodeExpiry,
+            }
+          });
+
+          // Send verification code email
+          try {
+            const { sendEmail, generateVerificationCodeEmailHtml, generateVerificationCodeEmailText } = await import("@/lib/email");
+            
+            const emailResult = await sendEmail({
+              to: credentials.email,
+              subject: "TimeROI - Email Verification Required",
+              html: generateVerificationCodeEmailHtml(user.name || "User", newVerificationCode),
+              text: generateVerificationCodeEmailText(user.name || "User", newVerificationCode)
+            });
+            
+            if (emailResult.success) {
+              console.log(`Verification code sent to unverified user attempting login: ${credentials.email}`);
+            }
+          } catch (emailError) {
+            console.error("Failed to send verification email on login attempt:", emailError);
+          }
+          
+          throw new Error("EMAIL_NOT_VERIFIED|Your email is not verified. We've sent a new verification code to your email. Please verify your email before signing in.|" + credentials.email);
         }
 
         return {

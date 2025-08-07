@@ -24,6 +24,7 @@ const VerifyCodeForm = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
   const email = searchParams.get("email");
+  const fromLogin = searchParams.get("from") === "login";
 
   // Timer countdown
   useEffect(() => {
@@ -245,7 +246,9 @@ const VerifyCodeForm = () => {
                 {isVerified 
                   ? "Your account has been successfully verified."
                   : email 
-                    ? `We've sent a 6-digit code to ${email}`
+                    ? fromLogin 
+                      ? `We've sent a new verification code to ${email}. Please verify to continue.`
+                      : `We've sent a 6-digit code to ${email}`
                     : "Enter the 6-digit code from your email"
                 }
               </CardDescription>
@@ -327,9 +330,12 @@ const VerifyCodeForm = () => {
               )}
 
               <div className="mt-6 text-center">
-                <Link href="/signup" className="inline-flex items-center space-x-2 text-primary hover:text-primary/80 font-medium">
+                <Link 
+                  href={fromLogin ? "/login" : "/signup"} 
+                  className="inline-flex items-center space-x-2 text-primary hover:text-primary/80 font-medium"
+                >
                   <ArrowLeft className="h-4 w-4" />
-                  <span>Back to Sign Up</span>
+                  <span>{fromLogin ? "Back to Login" : "Back to Sign Up"}</span>
                 </Link>
               </div>
             </CardContent>

@@ -53,14 +53,28 @@ const LoginForm = () => {
       });
 
       if (result?.error) {
-        if (result.error.includes("verify your email")) {
+        // Check if it's an email verification error with structured format
+        if (result.error.startsWith("EMAIL_NOT_VERIFIED|")) {
+          const errorParts = result.error.split("|");
+          const message = errorParts[1] || "Email verification required";
+          const userEmail = errorParts[2] || email;
+          
           toast({
             title: "Email verification required",
-            description: "Please verify your email before signing in. Check your inbox for the verification link.",
+            description: message,
+            variant: "destructive",
+          });
+          
+          // Redirect to verification code page with email
+          router.push(`/verify-code?email=${encodeURIComponent(userEmail)}&from=login`);
+        } else if (result.error.includes("verify your email")) {
+          toast({
+            title: "Email verification required",
+            description: "Please verify your email before signing in. Check your inbox for the verification code.",
             variant: "destructive",
           });
           // Redirect to verification page with email
-          router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+          router.push(`/verify-code?email=${encodeURIComponent(email)}&from=login`);
         } else {
           toast({
             title: "Invalid credentials",

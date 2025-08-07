@@ -27,18 +27,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      // Don't reveal if user exists or not for security
       return NextResponse.json(
-        { message: "If an account with that email exists and is unverified, we've sent a verification email." },
-        { status: 200 }
+        { error: "No account found with this email address. Please sign up first." },
+        { status: 404 }
       );
     }
 
     // Check if already verified
     if (user.emailVerified) {
       return NextResponse.json(
-        { message: "Email is already verified" },
-        { status: 200 }
+        { error: "This email is already verified. You can sign in directly." },
+        { status: 409 }
       );
     }
 
@@ -50,8 +49,8 @@ export async function POST(request: NextRequest) {
     await prisma.users.update({
       where: { id: user.id },
       data: {
-        verificationToken: verificationCode,
-        verificationTokenExpiry: verificationCodeExpiry,
+        verificationCode: verificationCode,
+        verificationCodeExpiry: verificationCodeExpiry,
       }
     });
 
@@ -59,28 +58,43 @@ export async function POST(request: NextRequest) {
     try {
       const { sendEmail, generateVerificationCodeEmailHtml, generateVerificationCodeEmailText } = await import("@/lib/email");
       
-      // Extract name from email for personalization
-      const name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      
-      await sendEmail({
+      const emailResult = await sendEmail({
         to: email,
-        subject: "Your TimeROI verification code",
-        html: generateVerificationCodeEmailHtml(name, verificationCode),
-        text: generateVerificationCodeEmailText(name, verificationCode)
+        subject: "Your TimeROI verification code - Resent",
+        html: generateVerificationCodeEmailHtml(user.name || "User", verificationCode),
+        text: generateVerificationCodeEmailText(user.name || "User", verificationCode)
       });
       
-      console.log(`Verification code resent to: ${email}`);
-      console.log(`Verification code: ${verificationCode} (expires in 5 minutes)`);
+      if (emailResult.success) {
+        console.log(`Verification code resent successfully to: ${email}`);
+        console.log(`Message ID: ${emailResult.messageId}`);
+      } else {
+        console.error(`Failed to resend verification email to: ${email}`, emailResult.error);
+        return NextResponse.json(
+          { error: "Failed to send verification email. Please try again." },
+          { status: 500 }
+        );
+      }
+      
+      console.log(`Resent verification code: ${verificationCode} (expires in 5 minutes)`);
     } catch (emailError) {
-      console.error("Failed to resend verification email:", emailError);
+      console.error("Failed to resend verification email:", {
+        email: email,
+        error: emailError?.message || emailError,
+        stack: emailError?.stack
+      });
+      
       return NextResponse.json(
-        { error: "Failed to send verification email" },
+        { error: "Failed to send verification email. Please try again." },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
-      { message: "If an account with that email exists and is unverified, we've sent a verification email." },
+      { 
+        message: "New verification code has been sent to your email.",
+        email: email
+      },
       { status: 200 }
     );
 
