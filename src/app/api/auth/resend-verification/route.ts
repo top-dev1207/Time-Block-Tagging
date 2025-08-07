@@ -77,11 +77,12 @@ export async function POST(request: NextRequest) {
       }
       
       console.log(`Resent verification code: ${verificationCode} (expires in 5 minutes)`);
-    } catch (emailError) {
+    } catch (emailError: unknown) {
+      const error = emailError instanceof Error ? emailError : new Error(String(emailError));
       console.error("Failed to resend verification email:", {
         email: email,
-        error: emailError?.message || emailError,
-        stack: emailError?.stack
+        error: error.message,
+        stack: error.stack
       });
       
       return NextResponse.json(

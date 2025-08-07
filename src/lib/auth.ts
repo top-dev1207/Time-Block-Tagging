@@ -137,8 +137,9 @@ export const authOptions: NextAuthOptions = {
             if (emailResult.success) {
               console.log(`Verification code sent to unverified user attempting login: ${credentials.email}`);
             }
-          } catch (emailError) {
-            console.error("Failed to send verification email on login attempt:", emailError);
+          } catch (emailError: unknown) {
+            const error = emailError instanceof Error ? emailError : new Error(String(emailError));
+            console.error("Failed to send verification email on login attempt:", error.message);
           }
           
           throw new Error("EMAIL_NOT_VERIFIED|Your email is not verified. We've sent a new verification code to your email. Please verify your email before signing in.|" + credentials.email);

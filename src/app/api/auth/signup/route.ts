@@ -70,11 +70,12 @@ export async function POST(request: NextRequest) {
           }
           
           console.log(`New verification code: ${newVerificationCode} (expires in 5 minutes)`);
-        } catch (emailError) {
+        } catch (emailError: unknown) {
+          const error = emailError instanceof Error ? emailError : new Error(String(emailError));
           console.error("Failed to send verification email for existing user:", {
             email: email,
-            error: emailError?.message || emailError,
-            stack: emailError?.stack
+            error: error.message,
+            stack: error.stack
           });
         }
 

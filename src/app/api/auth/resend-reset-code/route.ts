@@ -79,8 +79,9 @@ export async function POST(request: NextRequest) {
           </div>
         `
       });
-    } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
+    } catch (emailError: unknown) {
+      const error = emailError instanceof Error ? emailError : new Error(String(emailError));
+      console.error('Failed to send verification email:', error.message);
       // Don't reveal email sending failure to user for security
     }
 
