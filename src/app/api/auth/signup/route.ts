@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
     try {
       const { sendEmail, generateVerificationCodeEmailHtml, generateVerificationCodeEmailText } = await import("@/lib/email");
       
-      await sendEmail({
+      const emailResult = await sendEmail({
         to: email,
         subject: "Your TimeROI verification code",
         html: generateVerificationCodeEmailHtml(name, verificationCode),
