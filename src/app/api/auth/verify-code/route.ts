@@ -26,13 +26,34 @@ export async function POST(request: NextRequest) {
     const user = await prisma.users.findFirst({
       where: {
         email: email,
-        verificationToken: code,
-        verificationTokenExpiry: {
+        verificationCode: code,
+        verificationCodeExpiry: {
           gt: new Date() // Code hasn't expired
         },
         emailVerified: null // Not yet verified
       }
     });
+
+    console.log(`Verification attempt for: ${email} with code: ${code}`);
+    console.log(`User found:`, user ? 'Yes' : 'No');
+    
+    if (!user) {
+      // Debug: Check if user exists at all
+      const existingUser = await prisma.users.findUnique({
+        where: { email },
+        select: {
+          email: true,
+          verificationCode: true,
+          verificationCodeExpiry: true,
+          emailVerified: true,
+          createdAt: true
+        }
+      });
+      
+      console.log(`Debug - User in DB:`, existingUser);
+      console.log(`Debug - Current time:`, new Date().toISOString());
+      console.log(`Debug - Code expiry:`, existingUser?.verificationCodeExpiry?.toISOString());
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -46,10 +67,12 @@ export async function POST(request: NextRequest) {
       where: { id: user.id },
       data: {
         emailVerified: new Date(),
-        verificationToken: null,
-        verificationTokenExpiry: null,
+        verificationCode: null,
+        verificationCodeExpiry: null,
       }
     });
+
+    console.log(`Email verification successful for: ${email}`);
 
     return NextResponse.json(
       { 

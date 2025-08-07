@@ -117,8 +117,8 @@ export async function POST(request: NextRequest) {
         email,
         company,
         password: hashedPassword,
-        verificationToken: verificationCode,
-        verificationTokenExpiry: verificationCodeExpiry,
+        verificationCode: verificationCode,
+        verificationCodeExpiry: verificationCodeExpiry,
       },
       select: {
         id: true,
@@ -177,7 +177,13 @@ export async function POST(request: NextRequest) {
         text: generateVerificationCodeEmailText(name, verificationCode)
       });
       
-      console.log(`Verification code sent to: ${email}`);
+      if (emailResult.success) {
+        console.log(`Verification code sent successfully to: ${email}`);
+        console.log(`Message ID: ${emailResult.messageId}`);
+      } else {
+        console.error(`Failed to send verification email to: ${email}`, emailResult.error);
+      }
+      
       console.log(`Verification code: ${verificationCode} (expires in 5 minutes)`);
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError);
