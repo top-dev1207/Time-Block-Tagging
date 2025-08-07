@@ -10,9 +10,17 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user || !session.accessToken) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const accessToken = (session as any)?.accessToken;
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "No Google Calendar access token found. Please sign in with Google." },
         { status: 401 }
       );
     }
@@ -29,7 +37,7 @@ export async function PUT(
       eventData.endTime = new Date(eventData.endTime);
     }
 
-    const calendar = new GoogleCalendarAPI(session.accessToken);
+    const calendar = new GoogleCalendarAPI(accessToken);
     
     console.log(`Updating calendar event ${eventId} for user: ${session.user.email}`);
     console.log(`Update data:`, eventData);
@@ -67,9 +75,17 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user || !session.accessToken) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const accessToken = (session as any)?.accessToken;
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "No Google Calendar access token found. Please sign in with Google." },
         { status: 401 }
       );
     }
@@ -78,7 +94,7 @@ export async function DELETE(
     const calendarId = searchParams.get('calendarId') || 'primary';
     const eventId = params.eventId;
 
-    const calendar = new GoogleCalendarAPI(session.accessToken);
+    const calendar = new GoogleCalendarAPI(accessToken);
     
     console.log(`Deleting calendar event ${eventId} for user: ${session.user.email}`);
 

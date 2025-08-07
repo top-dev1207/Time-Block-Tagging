@@ -7,9 +7,25 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user || !session.accessToken) {
+    console.log("Session data:", {
+      hasUser: !!session?.user,
+      hasAccessToken: !!(session as any)?.accessToken,
+      userEmail: session?.user?.email,
+      sessionKeys: session ? Object.keys(session) : []
+    });
+    
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const accessToken = (session as any)?.accessToken;
+    if (!accessToken) {
+      console.error("No access token found in session");
+      return NextResponse.json(
+        { error: "No Google Calendar access token found. Please sign in with Google." },
         { status: 401 }
       );
     }
@@ -20,7 +36,7 @@ export async function GET(request: NextRequest) {
     const timeMax = searchParams.get('timeMax');
     const maxResults = parseInt(searchParams.get('maxResults') || '50');
 
-    const calendar = new GoogleCalendarAPI(session.accessToken);
+    const calendar = new GoogleCalendarAPI(accessToken);
     
     console.log(`Fetching calendar events for user: ${session.user.email}`);
     console.log(`Parameters: calendarId=${calendarId}, timeMin=${timeMin}, timeMax=${timeMax}`);
@@ -56,9 +72,17 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user || !session.accessToken) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const accessToken = (session as any)?.accessToken;
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "No Google Calendar access token found. Please sign in with Google." },
         { status: 401 }
       );
     }
@@ -81,7 +105,7 @@ export async function POST(request: NextRequest) {
       endTime: new Date(eventData.endTime)
     };
 
-    const calendar = new GoogleCalendarAPI(session.accessToken);
+    const calendar = new GoogleCalendarAPI(accessToken);
     
     console.log(`Creating calendar event for user: ${session.user.email}`);
     console.log(`Event data:`, createEventData);

@@ -7,14 +7,22 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user || !session.accessToken) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
       );
     }
 
-    const calendar = new GoogleCalendarAPI(session.accessToken);
+    const accessToken = (session as any)?.accessToken;
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "No Google Calendar access token found. Please sign in with Google." },
+        { status: 401 }
+      );
+    }
+
+    const calendar = new GoogleCalendarAPI(accessToken);
     
     console.log(`Fetching calendar list for user: ${session.user.email}`);
 

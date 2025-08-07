@@ -1,6 +1,7 @@
 "use client";
 
 import FullCalendarComponent from "@/components/calendar/FullCalendarComponent";
+import CalendarAuthTest from "@/components/calendar/CalendarAuthTest";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, BarChart3, TrendingUp, Clock } from "lucide-react";
@@ -31,6 +32,9 @@ const CalendarView = () => {
           </div>
         )}
       </div>
+
+      {/* Debug Component - Temporary */}
+      <CalendarAuthTest />
 
       {/* FullCalendar Component */}
       <FullCalendarComponent />

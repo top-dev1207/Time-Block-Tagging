@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Loader2, RefreshCw, Tag, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, RefreshCw, Tag, Calendar as CalendarIcon, Shield } from "lucide-react";
 
 interface CalendarEvent {
   id: string;

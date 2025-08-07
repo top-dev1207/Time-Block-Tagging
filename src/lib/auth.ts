@@ -37,12 +37,40 @@ async function refreshAccessToken(token: any) {
       throw refreshedTokens;
     }
 
-    return {
+    const newToken = {
       ...token,
       accessToken: refreshedTokens.access_token,
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
     };
+
+    // Update the database with the new token
+    try {
+      if (token.email) {
+        const dbUser = await prisma.users.findUnique({
+          where: { email: token.email }
+        });
+        
+        if (dbUser) {
+          await prisma.accounts.updateMany({
+            where: {
+              userId: dbUser.id,
+              provider: "google"
+            },
+            data: {
+              access_token: refreshedTokens.access_token,
+              expires_at: Math.floor((Date.now() + refreshedTokens.expires_in * 1000) / 1000),
+              refresh_token: refreshedTokens.refresh_token ?? token.refreshToken,
+            }
+          });
+          console.log("Updated refreshed token in database for:", token.email);
+        }
+      }
+    } catch (dbError) {
+      console.error("Failed to update refreshed token in database:", dbError);
+    }
+
+    return newToken;
   } catch (error) {
     console.error("Error refreshing access token:", error);
     return {
@@ -353,13 +381,45 @@ export const authOptions: NextAuthOptions = {
         };
       }
 
+      // If we don't have an access token in the token, try to get it from database
+      if (!token.accessToken && token.email) {
+        console.log("No accessToken in JWT, fetching from database for:", token.email);
+        try {
+          const dbUser = await prisma.users.findUnique({
+            where: { email: token.email }
+          });
+          
+          if (dbUser) {
+            const googleAccount = await prisma.accounts.findFirst({
+              where: {
+                userId: dbUser.id,
+                provider: "google"
+              }
+            });
+            
+            if (googleAccount && googleAccount.access_token) {
+              console.log("Found Google access token in database for:", token.email);
+              token.accessToken = googleAccount.access_token;
+              token.refreshToken = googleAccount.refresh_token;
+              token.accessTokenExpires = googleAccount.expires_at ? googleAccount.expires_at * 1000 : 0;
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching access token from database:", error);
+        }
+      }
+
       // Return previous token if the access token has not expired yet
-      if (Date.now() < (token.accessTokenExpires as number)) {
+      if (token.accessTokenExpires && Date.now() < (token.accessTokenExpires as number)) {
         return token;
       }
 
       // Access token has expired, try to update it
-      return await refreshAccessToken(token);
+      if (token.refreshToken) {
+        return await refreshAccessToken(token);
+      }
+      
+      return token;
     },
     async session({ session, token }) {
       console.log("NextAuth session callback:", { 
@@ -378,6 +438,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).provider = token.provider as string;
         session.accessToken = token.accessToken as string;
         console.log("Session created for user:", session.user.id, "with email:", session.user.email);
+        console.log("Session accessToken set:", !!session.accessToken);
       }
       return session;
     },
