@@ -629,27 +629,11 @@ export default function FullCalendarComponent({
         return event;
       });
 
-      // Only update state if events have actually changed (for silent refreshes)
-      if (silent) {
-        const hasChanges = JSON.stringify(events.map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end }))) 
-                          !== JSON.stringify(transformedEvents.map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end })));
-        
-        if (hasChanges) {
-          setEvents(transformedEvents);
-          setFilteredEvents(transformedEvents);
-          calculateAnalytics(transformedEvents);
-          onEventsLoaded?.(transformedEvents);
-          console.log('Silent refresh: Calendar data updated');
-        } else {
-          console.log('Silent refresh: No changes detected');
-        }
-      } else {
-        // For manual refreshes, always update
-        setEvents(transformedEvents);
-        setFilteredEvents(transformedEvents);
-        calculateAnalytics(transformedEvents);
-        onEventsLoaded?.(transformedEvents);
-      }
+      // Always update state for both manual and initial loads
+      setEvents(transformedEvents);
+      setFilteredEvents(transformedEvents);
+      calculateAnalytics(transformedEvents);
+      onEventsLoaded?.(transformedEvents);
       
       // Only show success toast for manual refreshes
       if (!silent) {
@@ -676,33 +660,15 @@ export default function FullCalendarComponent({
         setIsLoading(false);
       }
     }
-  }, [session, status, toast, onEventsLoaded, calculateAnalytics, events]);
+  }, [session, status, toast, onEventsLoaded, calculateAnalytics]); // Removed 'events' to prevent infinite loops
 
-  // Load events only when user is authenticated
+  // Load events only when user is authenticated (initial load only)
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
+      console.log('Initial calendar data load triggered');
       loadCalendarEvents();
     }
-  }, [status, session?.user, loadCalendarEvents]);
-
-  // Auto-refresh calendar data every minute
-  useEffect(() => {
-    if (status !== "authenticated" || !session?.user) {
-      return;
-    }
-
-    console.log('Setting up auto-refresh interval (every 60 seconds)');
-    const interval = setInterval(() => {
-      console.log('Auto-refresh triggered');
-      loadCalendarEvents(true); // Silent refresh
-    }, 60000); // 60 seconds = 1 minute
-
-    // Cleanup interval on component unmount
-    return () => {
-      console.log('Cleaning up auto-refresh interval');
-      clearInterval(interval);
-    };
-  }, [status, session?.user, loadCalendarEvents]);
+  }, [status, session?.user]); // Removed loadCalendarEvents from dependencies to prevent re-calls
 
   // Apply filters when filter values change
   useEffect(() => {
