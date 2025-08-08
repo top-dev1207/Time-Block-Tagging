@@ -217,6 +217,9 @@ export default function FullCalendarComponent({
       setEvents(prev => [...prev, createdEvent]);
       setIsCreateDialogOpen(false);
       
+      // Save the initial tag for the new event
+      await saveEventTag(data.event.id, newEvent.valueTier, newEvent.category);
+      
       // Reset form
       setNewEvent({
         title: '',
@@ -268,6 +271,15 @@ export default function FullCalendarComponent({
       setEvents(prev => prev.filter(e => e.id !== eventId));
       setIsDialogOpen(false);
       
+      // Also delete the tag from database
+      try {
+        await fetch(`/api/calendar/tags?eventId=${eventId}`, {
+          method: 'DELETE',
+        });
+      } catch (error) {
+        console.error('Error deleting event tag:', error);
+      }
+      
       toast({
         title: "Event Deleted",
         description: "The event has been removed from your calendar.",
@@ -316,6 +328,50 @@ export default function FullCalendarComponent({
     });
   };
 
+  // Load saved tags from database
+  const loadEventTags = async () => {
+    try {
+      const response = await fetch('/api/calendar/tags');
+      if (response.ok) {
+        const data = await response.json();
+        return data.tags || {};
+      }
+    } catch (error) {
+      console.error('Error loading event tags:', error);
+    }
+    return {};
+  };
+
+  // Save tag to database
+  const saveEventTag = async (eventId: string, valueTier: string, category: string) => {
+    try {
+      const response = await fetch('/api/calendar/tags', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventId,
+          valueTier,
+          category
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save event tag');
+      }
+
+      console.log(`Tag saved for event ${eventId}`);
+    } catch (error) {
+      console.error('Error saving event tag:', error);
+      toast({
+        title: "Failed to save tag",
+        description: "Your tag changes may not persist after refresh.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const loadCalendarEvents = async () => {
     // Only allow authenticated users to load calendar events
     if (!session?.user || status !== "authenticated") {
@@ -349,20 +405,26 @@ export default function FullCalendarComponent({
         throw new Error(data.error || 'Failed to fetch calendar events');
       }
 
+      // Load saved tags from database
+      const savedTags = await loadEventTags();
+
       // Transform Google Calendar events to FullCalendar format
-      const transformedEvents: CalendarEvent[] = data.events.map((gEvent: any) => ({
-        id: gEvent.id,
-        title: gEvent.summary || 'Untitled Event',
-        start: gEvent.start.dateTime || gEvent.start.date || '',
-        end: gEvent.end.dateTime || gEvent.end.date || '',
-        description: gEvent.description,
-        location: gEvent.location,
-        extendedProps: {
-          originalEvent: gEvent,
-          valueTier: "100", // Default value tier
-          category: "MTG", // Default category
-        }
-      }));
+      const transformedEvents: CalendarEvent[] = data.events.map((gEvent: any) => {
+        const savedTag = savedTags[gEvent.id];
+        return {
+          id: gEvent.id,
+          title: gEvent.summary || 'Untitled Event',
+          start: gEvent.start.dateTime || gEvent.start.date || '',
+          end: gEvent.end.dateTime || gEvent.end.date || '',
+          description: gEvent.description,
+          location: gEvent.location,
+          extendedProps: {
+            originalEvent: gEvent,
+            valueTier: savedTag?.valueTier || "100", // Use saved tier or default
+            category: savedTag?.category || "MTG", // Use saved category or default
+          }
+        };
+      });
 
       setEvents(transformedEvents);
       setFilteredEvents(transformedEvents);
@@ -406,7 +468,8 @@ export default function FullCalendarComponent({
     }
   };
 
-  const handleEventUpdate = (eventId: string, updates: { valueTier?: string; category?: string }) => {
+  const handleEventUpdate = async (eventId: string, updates: { valueTier?: string; category?: string }) => {
+    // Update local state immediately for better UX
     setEvents(prev => prev.map(event => 
       event.id === eventId 
         ? { 
@@ -429,6 +492,17 @@ export default function FullCalendarComponent({
         }
       } : null);
     }
+
+    // Get current values for saving
+    const event = events.find(e => e.id === eventId);
+    const currentTier = event?.extendedProps?.valueTier || "100";
+    const currentCategory = event?.extendedProps?.category || "MTG";
+    
+    const finalTier = updates.valueTier || currentTier;
+    const finalCategory = updates.category || currentCategory;
+
+    // Save to database
+    await saveEventTag(eventId, finalTier, finalCategory);
 
     toast({
       title: "Event Updated",
