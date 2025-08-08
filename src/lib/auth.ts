@@ -400,7 +400,7 @@ export const authOptions: NextAuthOptions = {
             if (googleAccount && googleAccount.access_token) {
               console.log("Found Google access token in database for:", token.email);
               token.accessToken = googleAccount.access_token;
-              token.refreshToken = googleAccount.refresh_token;
+              token.refreshToken = googleAccount.refresh_token || undefined;
               token.accessTokenExpires = googleAccount.expires_at ? googleAccount.expires_at * 1000 : 0;
             }
           }
@@ -431,9 +431,9 @@ export const authOptions: NextAuthOptions = {
 
       if (token) {
         session.user.id = token.id as string;
-        session.user.email = token.email as string;
-        session.user.name = token.name as string;
-        session.user.image = token.image as string;
+        session.user.email = (token.email as string) || undefined;
+        session.user.name = (token.name as string) || undefined;
+        session.user.image = (token.image as string) || undefined;
         (session.user as any).company = token.company as string;
         (session.user as any).provider = token.provider as string;
         session.accessToken = token.accessToken as string;

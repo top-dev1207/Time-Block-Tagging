@@ -15,7 +15,17 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Loader2, RefreshCw, Tag, Calendar as CalendarIcon, Shield } from "lucide-react";
+import { Loader2, RefreshCw, Tag, Calendar as CalendarIcon, Shield, Plus, Edit, Trash2, Filter, Download, BarChart } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 interface CalendarEvent {
   id: string;
@@ -48,15 +58,263 @@ const categories = [
   { value: "MTG", label: "Meetings", color: "bg-primary/20 text-primary" }
 ];
 
-export default function FullCalendarComponent() {
+interface FullCalendarComponentProps {
+  onEventsLoaded?: (events: CalendarEvent[]) => void;
+  onAnalyticsUpdate?: (analytics: any) => void;
+}
+
+export default function FullCalendarComponent({ 
+  onEventsLoaded, 
+  onAnalyticsUpdate 
+}: FullCalendarComponentProps = {}) {
   const { data: session, status } = useSession();
   const { toast } = useToast();
   const calendarRef = useRef<FullCalendar>(null);
   
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentView, setCurrentView] = useState('timeGridWeek');
+  const [filterTier, setFilterTier] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [analytics, setAnalytics] = useState({
+    totalEvents: 0,
+    highValueEvents: 0,
+    categoryDistribution: {} as Record<string, number>,
+    tierDistribution: {} as Record<string, number>,
+    totalHours: 0,
+    highValueHours: 0
+  });
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    description: '',
+    location: '',
+    startDate: '',
+    startTime: '',
+    endDate: '',
+    endTime: '',
+    valueTier: '100',
+    category: 'MTG'
+  });
+
+  // Calculate analytics from events
+  const calculateAnalytics = (eventsList: CalendarEvent[]) => {
+    const stats = {
+      totalEvents: eventsList.length,
+      highValueEvents: 0,
+      categoryDistribution: {} as Record<string, number>,
+      tierDistribution: {} as Record<string, number>,
+      totalHours: 0,
+      highValueHours: 0
+    };
+
+    eventsList.forEach(event => {
+      // Count high-value events (£10K and £1K)
+      const tier = event.extendedProps?.valueTier || '100';
+      if (tier === '10000' || tier === '1000') {
+        stats.highValueEvents++;
+      }
+
+      // Category distribution
+      const category = event.extendedProps?.category || 'MTG';
+      stats.categoryDistribution[category] = (stats.categoryDistribution[category] || 0) + 1;
+
+      // Tier distribution
+      stats.tierDistribution[tier] = (stats.tierDistribution[tier] || 0) + 1;
+
+      // Calculate hours
+      if (event.start && event.end) {
+        const startTime = new Date(event.start).getTime();
+        const endTime = new Date(event.end).getTime();
+        const hours = (endTime - startTime) / (1000 * 60 * 60);
+        stats.totalHours += hours;
+        
+        if (tier === '10000' || tier === '1000') {
+          stats.highValueHours += hours;
+        }
+      }
+    });
+
+    setAnalytics(stats);
+    onAnalyticsUpdate?.(stats);
+  };
+
+  // Filter events based on selected filters
+  const applyFilters = () => {
+    let filtered = [...events];
+
+    if (filterTier !== 'all') {
+      filtered = filtered.filter(event => 
+        event.extendedProps?.valueTier === filterTier
+      );
+    }
+
+    if (filterCategory !== 'all') {
+      filtered = filtered.filter(event => 
+        event.extendedProps?.category === filterCategory
+      );
+    }
+
+    setFilteredEvents(filtered);
+    calculateAnalytics(filtered);
+  };
+
+  // Create new event
+  const handleCreateEvent = async () => {
+    if (!newEvent.title || !newEvent.startDate || !newEvent.startTime || !newEvent.endDate || !newEvent.endTime) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const startDateTime = new Date(`${newEvent.startDate}T${newEvent.startTime}`);
+      const endDateTime = new Date(`${newEvent.endDate}T${newEvent.endTime}`);
+
+      const response = await fetch('/api/calendar/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          summary: newEvent.title,
+          description: newEvent.description,
+          location: newEvent.location,
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create event');
+      }
+
+      const data = await response.json();
+      
+      // Add the new event to our local state
+      const createdEvent: CalendarEvent = {
+        id: data.event.id,
+        title: data.event.summary,
+        start: data.event.start.dateTime || data.event.start.date,
+        end: data.event.end.dateTime || data.event.end.date,
+        description: data.event.description,
+        location: data.event.location,
+        extendedProps: {
+          valueTier: newEvent.valueTier,
+          category: newEvent.category,
+          originalEvent: data.event
+        }
+      };
+
+      setEvents(prev => [...prev, createdEvent]);
+      setIsCreateDialogOpen(false);
+      
+      // Reset form
+      setNewEvent({
+        title: '',
+        description: '',
+        location: '',
+        startDate: '',
+        startTime: '',
+        endDate: '',
+        endTime: '',
+        valueTier: '100',
+        category: 'MTG'
+      });
+
+      toast({
+        title: "Event Created",
+        description: "Your event has been added to Google Calendar.",
+      });
+
+      // Refresh calendar
+      await loadCalendarEvents();
+    } catch (error) {
+      console.error('Error creating event:', error);
+      toast({
+        title: "Creation Failed",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Delete event
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!confirm('Are you sure you want to delete this event?')) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/calendar/events/${eventId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete event');
+      }
+
+      setEvents(prev => prev.filter(e => e.id !== eventId));
+      setIsDialogOpen(false);
+      
+      toast({
+        title: "Event Deleted",
+        description: "The event has been removed from your calendar.",
+      });
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: "Deletion Failed",
+        description: "Failed to delete event. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Export events to CSV
+  const exportToCSV = () => {
+    const csvHeader = "Title,Start,End,Value Tier,Category,Description,Location\\n";
+    const csvRows = filteredEvents.map(event => {
+      const tier = valueTiers.find(t => t.value === event.extendedProps?.valueTier)?.label || '';
+      const category = categories.find(c => c.value === event.extendedProps?.category)?.label || '';
+      return [
+        event.title,
+        event.start,
+        event.end,
+        tier,
+        category,
+        event.description || '',
+        event.location || ''
+      ].map(field => `"${field}"`).join(',');
+    }).join('\\n');
+
+    const csvContent = csvHeader + csvRows;
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `calendar-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export Successful",
+      description: `Exported ${filteredEvents.length} events to CSV.`,
+    });
+  };
 
   const loadCalendarEvents = async () => {
     // Only allow authenticated users to load calendar events
@@ -107,6 +365,9 @@ export default function FullCalendarComponent() {
       }));
 
       setEvents(transformedEvents);
+      setFilteredEvents(transformedEvents);
+      calculateAnalytics(transformedEvents);
+      onEventsLoaded?.(transformedEvents);
       
       toast({
         title: "Calendar Synced",
@@ -131,6 +392,11 @@ export default function FullCalendarComponent() {
       loadCalendarEvents();
     }
   }, [status, session?.user]);
+
+  // Apply filters when filter values change
+  useEffect(() => {
+    applyFilters();
+  }, [filterTier, filterCategory, events]);
 
   const handleEventClick = (clickInfo: any) => {
     const event = events.find(e => e.id === clickInfo.event.id);
@@ -177,7 +443,7 @@ export default function FullCalendarComponent() {
   };
 
   // Format events for FullCalendar with colors
-  const calendarEvents = events.map(event => ({
+  const calendarEvents = filteredEvents.map(event => ({
     ...event,
     backgroundColor: getEventColor(event),
     borderColor: getEventColor(event),
@@ -212,7 +478,7 @@ export default function FullCalendarComponent() {
 
   return (
     <div className="space-y-6">
-      {/* Header with refresh button */}
+      {/* Header with action buttons */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Your Google Calendar</h2>
@@ -225,18 +491,134 @@ export default function FullCalendarComponent() {
             </p>
           )}
         </div>
-        <Button 
-          onClick={loadCalendarEvents} 
-          disabled={isLoading}
-          // variant="outline"
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
-          Refresh Calendar
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setIsCreateDialogOpen(true)}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            New Event
+          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="gap-2">
+                <Filter className="h-4 w-4" />
+                Filter
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Filter by Value Tier</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setFilterTier('all')}
+              >
+                {filterTier === 'all' && '✓ '}All Tiers
+              </DropdownMenuItem>
+              {valueTiers.map(tier => (
+                <DropdownMenuItem
+                  key={tier.value}
+                  onClick={() => setFilterTier(tier.value)}
+                >
+                  {filterTier === tier.value && '✓ '}{tier.label}
+                </DropdownMenuItem>
+              ))}
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setFilterCategory('all')}
+              >
+                {filterCategory === 'all' && '✓ '}All Categories
+              </DropdownMenuItem>
+              {categories.map(category => (
+                <DropdownMenuItem
+                  key={category.value}
+                  onClick={() => setFilterCategory(category.value)}
+                >
+                  {filterCategory === category.value && '✓ '}{category.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button 
+            onClick={exportToCSV}
+            className="gap-2"
+            disabled={filteredEvents.length === 0}
+          >
+            <Download className="h-4 w-4" />
+            Export
+          </Button>
+
+          <Button 
+            onClick={loadCalendarEvents} 
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {/* Analytics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics.totalEvents}</div>
+            <p className="text-xs text-muted-foreground">
+              {analytics.totalHours.toFixed(1)} hours
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">High-Value Events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics.highValueEvents}</div>
+            <p className="text-xs text-muted-foreground">
+              {analytics.highValueHours.toFixed(1)} hours {analytics.totalHours > 0 ? `(${((analytics.highValueHours / analytics.totalHours) * 100).toFixed(0)}%)` : ''}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Top Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {Object.entries(analytics.categoryDistribution).sort((a, b) => b[1] - a[1])[0]?.[0] || '-'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {Object.entries(analytics.categoryDistribution).sort((a, b) => b[1] - a[1])[0]?.[1] || 0} events
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Active Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {(filterTier !== 'all' ? 1 : 0) + (filterCategory !== 'all' ? 1 : 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Showing {filteredEvents.length} of {events.length} events
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Value Tier Legend */}
@@ -426,8 +808,179 @@ export default function FullCalendarComponent() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="flex justify-between pt-4">
+                <Button
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => handleDeleteEvent(selectedEvent.id)}
+                  disabled={isLoading}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Event
+                </Button>
+                <Button
+                  onClick={() => setIsDialogOpen(false)}
+                >
+                  Close
+                </Button>
+              </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Event Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create New Event</DialogTitle>
+            <DialogDescription>
+              Add a new event to your Google Calendar
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Event Title *</Label>
+              <Input
+                id="title"
+                value={newEvent.title}
+                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                placeholder="Enter event title"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={newEvent.description}
+                onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                placeholder="Enter event description"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={newEvent.location}
+                onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                placeholder="Enter location"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="startDate">Start Date *</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={newEvent.startDate}
+                  onChange={(e) => setNewEvent({ ...newEvent, startDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="startTime">Start Time *</Label>
+                <Input
+                  id="startTime"
+                  type="time"
+                  value={newEvent.startTime}
+                  onChange={(e) => setNewEvent({ ...newEvent, startTime: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="endDate">End Date *</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={newEvent.endDate}
+                  onChange={(e) => setNewEvent({ ...newEvent, endDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="endTime">End Time *</Label>
+                <Input
+                  id="endTime"
+                  type="time"
+                  value={newEvent.endTime}
+                  onChange={(e) => setNewEvent({ ...newEvent, endTime: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Value Tier</Label>
+              <Select 
+                value={newEvent.valueTier}
+                onValueChange={(value) => setNewEvent({ ...newEvent, valueTier: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {valueTiers.map(tier => (
+                    <SelectItem key={tier.value} value={tier.value}>
+                      <div className="flex items-center space-x-2">
+                        <div 
+                          className="w-3 h-3 rounded"
+                          style={{ backgroundColor: tier.bgColor }}
+                        />
+                        <span>{tier.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Category</Label>
+              <Select 
+                value={newEvent.category}
+                onValueChange={(value) => setNewEvent({ ...newEvent, category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(category => (
+                    <SelectItem key={category.value} value={category.value}>
+                      <div className="flex items-center space-x-2">
+                        <Badge className={`text-xs ${category.color}`}>
+                          {category.value}
+                        </Badge>
+                        <span>{category.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateEvent}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
+                Create Event
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

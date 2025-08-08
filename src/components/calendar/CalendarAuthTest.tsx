@@ -129,7 +129,7 @@ export default function CalendarAuthTest() {
             Run Test
           </Button>
           {testResults && !testResults.calendarApiWorking && (
-            <Button onClick={handleReauthorize} variant="outline">
+            <Button onClick={handleReauthorize}>
               <ExternalLink className="h-4 w-4 mr-2" />
               Re-authorize Google
             </Button>
@@ -147,7 +147,7 @@ export default function CalendarAuthTest() {
                 <XCircle className="h-5 w-5 text-red-500" />
               )}
               <span className="font-medium">Session exists</span>
-              <Badge variant={testResults.sessionExists ? "default" : "destructive"}>
+              <Badge>
                 {testResults.sessionExists ? "PASS" : "FAIL"}
               </Badge>
             </div>
@@ -159,7 +159,7 @@ export default function CalendarAuthTest() {
                 <XCircle className="h-5 w-5 text-red-500" />
               )}
               <span className="font-medium">Access token available</span>
-              <Badge variant={testResults.accessTokenExists ? "default" : "destructive"}>
+              <Badge>
                 {testResults.accessTokenExists ? "PASS" : "FAIL"}
               </Badge>
             </div>
@@ -171,7 +171,7 @@ export default function CalendarAuthTest() {
                 <XCircle className="h-5 w-5 text-red-500" />
               )}
               <span className="font-medium">Calendar API working</span>
-              <Badge variant={testResults.calendarApiWorking ? "default" : "destructive"}>
+              <Badge>
                 {testResults.calendarApiWorking ? "PASS" : "FAIL"}
               </Badge>
             </div>

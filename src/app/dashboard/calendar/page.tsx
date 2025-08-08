@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import FullCalendarComponent from "@/components/calendar/FullCalendarComponent";
-import CalendarAuthTest from "@/components/calendar/CalendarAuthTest";
+import CalendarAnalytics from "@/components/calendar/CalendarAnalytics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, BarChart3, TrendingUp, Clock } from "lucide-react";
@@ -12,6 +13,15 @@ import { useSession } from "next-auth/react";
 
 const CalendarView = () => {
   const { data: session } = useSession();
+  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  const [calendarAnalytics, setCalendarAnalytics] = useState({
+    totalEvents: 0,
+    highValueEvents: 0,
+    categoryDistribution: {} as Record<string, number>,
+    tierDistribution: {} as Record<string, number>,
+    totalHours: 0,
+    highValueHours: 0
+  });
 
   return (
     <div className="space-y-6">
@@ -33,74 +43,20 @@ const CalendarView = () => {
         )}
       </div>
 
-      {/* Debug Component - Temporary */}
-      <CalendarAuthTest />
 
       {/* FullCalendar Component */}
-      <FullCalendarComponent />
+      <FullCalendarComponent 
+        onEventsLoaded={setCalendarEvents}
+        onAnalyticsUpdate={setCalendarAnalytics}
+      />
 
-      {/* Analytics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">This month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">High-Value Time</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">£10K+ events</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Time Distribution</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">By category</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Calendar Insights</CardTitle>
-          <CardDescription>
-            Analyze your time allocation patterns
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-4">
-            <Button className="justify-start" disabled>
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Weekly Analysis
-            </Button>
-            <Button className="justify-start" disabled>
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Value Trends
-            </Button>
-            <Button className="justify-start" disabled>
-              <Clock className="h-4 w-4 mr-2" />
-              Export Report
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Analytics features coming soon
-          </p>
-        </CardContent>
-      </Card>
+      {/* Analytics Component */}
+      {calendarEvents.length > 0 && (
+        <CalendarAnalytics 
+          events={calendarEvents} 
+          analytics={calendarAnalytics}
+        />
+      )}
     </div>
   );
 };
