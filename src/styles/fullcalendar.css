@@ -411,3 +411,49 @@
 .fc-dayGridMonth-view .fc-day-mon {
   order: 1;
 }
+
+/* Time selection styles */
+.fc-highlight {
+  background: hsl(var(--primary) / 0.1) !important;
+  border: 2px solid hsl(var(--primary)) !important;
+}
+
+.fc-select-mirror {
+  background: hsl(var(--primary) / 0.2) !important;
+  border: 2px dashed hsl(var(--primary)) !important;
+  opacity: 0.8 !important;
+}
+
+/* Selectable area cursor */
+.fc-timegrid-slot,
+.fc-daygrid-day {
+  cursor: crosshair;
+}
+
+.fc-timegrid-slot:hover,
+.fc-daygrid-day:hover {
+  background-color: hsl(var(--muted) / 0.3);
+}
+
+/* Selection feedback */
+.fc .fc-timegrid-col.fc-day-today .fc-timegrid-slot-lane {
+  border-right: 1px solid hsl(var(--border));
+}
+
+/* Improve selection visibility in different views */
+.fc-daygrid-event-harness .fc-highlight,
+.fc-timegrid-event-harness .fc-highlight {
+  background: hsl(var(--primary) / 0.15) !important;
+  border-radius: 4px;
+}
+
+/* Selection animation */
+@keyframes selection-pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.6; }
+}
+
+.fc-highlight {
+  animation: selection-pulse 1.5s ease-in-out infinite;
+}

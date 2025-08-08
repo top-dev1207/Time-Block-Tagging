@@ -92,6 +92,8 @@ export default function FullCalendarComponent({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{start: Date, end: Date} | null>(null);
   const [filterTier, setFilterTier] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [analytics, setAnalytics] = useState({
@@ -234,6 +236,40 @@ export default function FullCalendarComponent({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle time slot selection for quick event creation
+  const handleSelect = (selectInfo: any) => {
+    const start = new Date(selectInfo.start);
+    const end = new Date(selectInfo.end);
+    
+    // Store selected time slot
+    setSelectedTimeSlot({ start, end });
+    
+    // Pre-fill the new event with selected times
+    const startDate = start.toISOString().split('T')[0];
+    const startTime = start.toTimeString().split(' ')[0].substring(0, 5);
+    const endDate = end.toISOString().split('T')[0];
+    const endTime = end.toTimeString().split(' ')[0].substring(0, 5);
+    
+    setNewEvent({
+      title: '',
+      description: '',
+      location: '',
+      startDate,
+      startTime,
+      endDate,
+      endTime,
+      valueTier: '100',
+      category: 'MTG'
+    });
+    
+    // Open quick create dialog
+    setIsQuickCreateOpen(true);
+    
+    // Clear the selection
+    const calendarApi = selectInfo.view.calendar;
+    calendarApi.unselect();
   };
 
   // Create new event
@@ -859,6 +895,9 @@ export default function FullCalendarComponent({
             }}
             events={calendarEvents}
             eventClick={handleEventClick}
+            selectable={true}
+            selectMirror={true}
+            select={handleSelect}
             height="auto"
             slotMinTime="06:00:00"
             slotMaxTime="22:00:00"
@@ -1262,6 +1301,219 @@ export default function FullCalendarComponent({
                   <Plus className="h-4 w-4 mr-2" />
                 )}
                 Create Event
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Create Event Dialog */}
+      <Dialog open={isQuickCreateOpen} onOpenChange={setIsQuickCreateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Plus className="h-5 w-5 text-primary" />
+              <span>Quick Create Event</span>
+            </DialogTitle>
+            <DialogDescription>
+              Create a new event for the selected time slot.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Selected Time Display */}
+            {selectedTimeSlot && (
+              <div className="p-3 bg-muted rounded-lg">
+                <div className="text-sm text-muted-foreground">Selected Time</div>
+                <div className="font-medium">
+                  {selectedTimeSlot.start.toLocaleDateString('en-GB', {
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  })} • {selectedTimeSlot.start.toLocaleTimeString('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  })} - {selectedTimeSlot.end.toLocaleTimeString('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="quick-title">Event Title *</Label>
+              <Input
+                id="quick-title"
+                type="text"
+                placeholder="Enter event title"
+                value={newEvent.title}
+                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && newEvent.title.trim()) {
+                    e.preventDefault();
+                    handleCreateEvent();
+                    setIsQuickCreateOpen(false);
+                    setSelectedTimeSlot(null);
+                    // Reset form after successful creation
+                    setNewEvent({
+                      title: '',
+                      description: '',
+                      location: '',
+                      startDate: '',
+                      startTime: '',
+                      endDate: '',
+                      endTime: '',
+                      valueTier: '100',
+                      category: 'MTG'
+                    });
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="quick-description">Description</Label>
+              <Textarea
+                id="quick-description"
+                placeholder="Add description (optional)"
+                value={newEvent.description}
+                onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                rows={2}
+              />
+            </div>
+
+            <div>
+              <Label>Value Tier</Label>
+              <Select 
+                value={newEvent.valueTier}
+                onValueChange={(value) => setNewEvent({ ...newEvent, valueTier: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue>
+                    {(() => {
+                      const tier = valueTiers.find(t => t.value === newEvent.valueTier);
+                      return tier ? (
+                        <div className="flex items-center space-x-2">
+                          <div 
+                            className="w-3 h-3 rounded"
+                            style={{ backgroundColor: tier.bgColor }}
+                          />
+                          <span>{tier.label}</span>
+                        </div>
+                      ) : null;
+                    })()}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {valueTiers.map(tier => (
+                    <SelectItem key={tier.value} value={tier.value}>
+                      <div className="flex items-center space-x-2">
+                        <div 
+                          className="w-3 h-3 rounded"
+                          style={{ backgroundColor: tier.bgColor }}
+                        />
+                        <span>{tier.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Category</Label>
+              <Select 
+                value={newEvent.category}
+                onValueChange={(value) => setNewEvent({ ...newEvent, category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue>
+                    {(() => {
+                      const cat = categories.find(c => c.value === newEvent.category);
+                      return cat ? (
+                        <div className="flex items-center space-x-2">
+                          <div className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${cat.color}`}>
+                            {cat.value}
+                          </div>
+                          <span>{cat.label}</span>
+                        </div>
+                      ) : null;
+                    })()}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(category => (
+                    <SelectItem key={category.value} value={category.value}>
+                      <div className="flex items-center space-x-2">
+                        <div className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${category.color}`}>
+                          {category.value}
+                        </div>
+                        <span>{category.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-between pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsQuickCreateOpen(false);
+                  setSelectedTimeSlot(null);
+                  // Reset form
+                  setNewEvent({
+                    title: '',
+                    description: '',
+                    location: '',
+                    startDate: '',
+                    startTime: '',
+                    endDate: '',
+                    endTime: '',
+                    valueTier: '100',
+                    category: 'MTG'
+                  });
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  await handleCreateEvent();
+                  setIsQuickCreateOpen(false);
+                  setSelectedTimeSlot(null);
+                  // Reset form after successful creation
+                  setNewEvent({
+                    title: '',
+                    description: '',
+                    location: '',
+                    startDate: '',
+                    startTime: '',
+                    endDate: '',
+                    endTime: '',
+                    valueTier: '100',
+                    category: 'MTG'
+                  });
+                }}
+                disabled={isLoading || !newEvent.title}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Event
+                  </>
+                )}
               </Button>
             </div>
           </div>
