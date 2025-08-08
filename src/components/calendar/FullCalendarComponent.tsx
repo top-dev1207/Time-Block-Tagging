@@ -90,7 +90,7 @@ export default function FullCalendarComponent({
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentView, setCurrentView] = useState('timeGridWeek');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [editedTitle, setEditedTitle] = useState('');
+  const [editedTitle, setEditedTitle] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [filterTier, setFilterTier] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -194,10 +194,12 @@ export default function FullCalendarComponent({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update event title');
+        console.error('Update API Error Response:', errorData);
+        throw new Error(errorData.details || errorData.error || 'Failed to update event title');
       }
 
-      const { event: updatedEvent } = await response.json();
+      const responseData = await response.json();
+      console.log('Update API Success Response:', responseData);
       
       // Update local state
       const updateEventInList = (list: CalendarEvent[]) => 
@@ -335,8 +337,12 @@ export default function FullCalendarComponent({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete event');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to delete event' }));
+        console.error('Delete API Error Response:', errorData);
+        throw new Error(errorData.details || errorData.error || 'Failed to delete event');
       }
+
+      console.log('Delete API Success: Event deleted successfully');
 
       setEvents(prev => prev.filter(e => e.id !== eventId));
       setFilteredEvents(prev => prev.filter(e => e.id !== eventId));
@@ -918,7 +924,7 @@ export default function FullCalendarComponent({
                       size="sm"
                       onClick={() => {
                         setIsEditingTitle(true);
-                        setEditedTitle(selectedEvent.title.replace(/^[A-Z]{3} │ /, ''));
+                        setEditedTitle(selectedEvent.title?.replace(/^[A-Z]{3} │ /, '') || '');
                       }}
                       className="h-6 px-2"
                     >

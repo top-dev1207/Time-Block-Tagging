@@ -64,6 +64,21 @@ export class GoogleCalendarAPI {
       throw new Error(`Google Calendar API error: ${response.status} - ${error.error?.message || error.error || 'Unknown error'}`);
     }
 
+    // Handle empty responses (like DELETE operations that return 204 No Content)
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return null;
+    }
+
+    // Check if response has content before trying to parse JSON
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const text = await response.text();
+      if (text.trim() === '') {
+        return null;
+      }
+      return JSON.parse(text);
+    }
+
     return response.json();
   }
 
@@ -176,28 +191,47 @@ export class GoogleCalendarAPI {
     });
   }
 
+  // Get a single event
+  async getEvent(calendarId: string = 'primary', eventId: string): Promise<CalendarEvent> {
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`;
+    return this.makeRequest(url);
+  }
+
   // Update an existing calendar event
   async updateEvent(calendarId: string = 'primary', eventId: string, eventData: Partial<CreateEventData>): Promise<CalendarEvent> {
     const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`;
     
-    const event: any = {};
-    if (eventData.title) event.summary = eventData.title;
-    if (eventData.description) event.description = eventData.description;
-    if (eventData.location) event.location = eventData.location;
+    // First, get the existing event to preserve all required fields
+    const existingEvent = await this.getEvent(calendarId, eventId);
+    
+    // Create updated event by merging existing data with new data
+    const event: any = {
+      summary: eventData.title || eventData.summary || existingEvent.summary,
+      description: eventData.description !== undefined ? eventData.description : existingEvent.description,
+      location: eventData.location !== undefined ? eventData.location : existingEvent.location,
+      start: existingEvent.start,
+      end: existingEvent.end,
+    };
+
+    // Update start/end times only if provided
     if (eventData.startTime) {
       event.start = {
         dateTime: eventData.startTime.toISOString(),
-        timeZone: eventData.timeZone || 'UTC',
+        timeZone: eventData.timeZone || existingEvent.start.timeZone || 'UTC',
       };
     }
     if (eventData.endTime) {
       event.end = {
         dateTime: eventData.endTime.toISOString(),
-        timeZone: eventData.timeZone || 'UTC',
+        timeZone: eventData.timeZone || existingEvent.end.timeZone || 'UTC',
       };
     }
+    
+    // Update attendees only if provided
     if (eventData.attendees) {
       event.attendees = eventData.attendees.map(email => ({ email }));
+    } else if (existingEvent.attendees) {
+      event.attendees = existingEvent.attendees;
     }
 
     return this.makeRequest(url, {

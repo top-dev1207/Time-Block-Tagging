@@ -42,14 +42,19 @@ export async function PUT(
     console.log(`Updating calendar event ${eventId} for user: ${session.user.email}`);
     console.log(`Update data:`, eventData);
 
-    const updatedEvent = await calendar.updateEvent(calendarId, eventId, eventData);
-
-    console.log(`Successfully updated event with ID: ${updatedEvent.id}`);
-
-    return NextResponse.json({
-      success: true,
-      event: updatedEvent
-    });
+    try {
+      const updatedEvent = await calendar.updateEvent(calendarId, eventId, eventData);
+      console.log(`Successfully updated event with ID: ${updatedEvent.id}`);
+      
+      return NextResponse.json({
+        success: true,
+        event: updatedEvent
+      });
+    } catch (updateError) {
+      // If the update fails, try to get more details
+      console.error("Detailed update error:", updateError);
+      throw updateError;
+    }
 
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
@@ -98,9 +103,13 @@ export async function DELETE(
     
     console.log(`Deleting calendar event ${eventId} for user: ${session.user.email}`);
 
-    await calendar.deleteEvent(calendarId, eventId);
-
-    console.log(`Successfully deleted event with ID: ${eventId}`);
+    try {
+      await calendar.deleteEvent(calendarId, eventId);
+      console.log(`Successfully deleted event with ID: ${eventId}`);
+    } catch (deleteError) {
+      console.error("Detailed delete error:", deleteError);
+      throw deleteError;
+    }
 
     return NextResponse.json({
       success: true,
