@@ -524,10 +524,10 @@ export default function FullCalendarComponent({
   // Format events for FullCalendar with colors and category labels
   const calendarEvents = filteredEvents.map(event => {
     const category = categories.find(c => c.value === event.extendedProps?.category);
-    const categoryLabel = category ? ` [${category.value}]` : "";
+    const categoryLabel = category ? `${category.value} • ` : "";
     return {
       ...event,
-      title: `${event.title}${categoryLabel}`,
+      title: `${categoryLabel}${event.title}`,
       backgroundColor: getEventColor(event),
       borderColor: getEventColor(event),
       textColor: "white",
@@ -805,16 +805,6 @@ export default function FullCalendarComponent({
                 tooltip += `\nDescription: ${info.event.extendedProps.description}`;
               }
               info.el.title = tooltip;
-              
-              // Add category badge to event element
-              if (category && info.el.querySelector('.fc-event-title')) {
-                const titleEl = info.el.querySelector('.fc-event-title');
-                const badge = document.createElement('span');
-                badge.className = 'ml-1 px-1 py-0.5 text-xs font-semibold rounded';
-                badge.style.backgroundColor = 'rgba(255,255,255,0.2)';
-                badge.textContent = category.value;
-                titleEl?.appendChild(badge);
-              }
             }}
           />
         </CardContent>
