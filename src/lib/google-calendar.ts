@@ -205,7 +205,14 @@ export class GoogleCalendarAPI {
     const existingEvent = await this.getEvent(calendarId, eventId);
     
     // Create updated event by merging existing data with new data
-    const event: any = {
+    const event: {
+      summary: string;
+      description?: string;
+      location?: string;
+      start: { dateTime?: string; date?: string; timeZone?: string };
+      end: { dateTime?: string; date?: string; timeZone?: string };
+      attendees?: { email: string }[];
+    } = {
       summary: eventData.title || eventData.summary || existingEvent.summary,
       description: eventData.description !== undefined ? eventData.description : existingEvent.description,
       location: eventData.location !== undefined ? eventData.location : existingEvent.location,
@@ -251,7 +258,7 @@ export class GoogleCalendarAPI {
 }
 
 // Hook for using Google Calendar API with session
-export function useGoogleCalendar(session: any) {
+export function useGoogleCalendar(session: { accessToken?: string } | null) {
   if (!session?.accessToken) {
     return null;
   }

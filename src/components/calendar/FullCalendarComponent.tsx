@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import "@/styles/fullcalendar.css";
 import { useSession } from "next-auth/react";
 import FullCalendar from "@fullcalendar/react";
@@ -48,7 +48,15 @@ interface CalendarEvent {
   extendedProps?: {
     valueTier?: string;
     category?: string;
-    originalEvent?: any;
+    originalEvent?: {
+      id: string;
+      summary?: string;
+      description?: string;
+      location?: string;
+      start?: { dateTime?: string; date?: string };
+      end?: { dateTime?: string; date?: string };
+      creator?: { email?: string };
+    };
   };
 }
 
@@ -70,7 +78,14 @@ const categories = [
 
 interface FullCalendarComponentProps {
   onEventsLoaded?: (events: CalendarEvent[]) => void;
-  onAnalyticsUpdate?: (analytics: any) => void;
+  onAnalyticsUpdate?: (analytics: {
+    totalEvents: number;
+    highValueEvents: number;
+    categoryDistribution: Record<string, number>;
+    tierDistribution: Record<string, number>;
+    totalHours: number;
+    highValueHours: number;
+  }) => void;
 }
 
 export default function FullCalendarComponent({ 
@@ -117,7 +132,7 @@ export default function FullCalendarComponent({
   });
 
   // Calculate analytics from events
-  const calculateAnalytics = (eventsList: CalendarEvent[]) => {
+  const calculateAnalytics = useCallback((eventsList: CalendarEvent[]) => {
     const stats = {
       totalEvents: eventsList.length,
       highValueEvents: 0,
@@ -156,10 +171,10 @@ export default function FullCalendarComponent({
 
     setAnalytics(stats);
     onAnalyticsUpdate?.(stats);
-  };
+  }, [onAnalyticsUpdate]);
 
   // Filter events based on selected filters
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...events];
 
     if (filterTier !== 'all') {
@@ -176,7 +191,7 @@ export default function FullCalendarComponent({
 
     setFilteredEvents(filtered);
     calculateAnalytics(filtered);
-  };
+  }, [events, filterTier, filterCategory, calculateAnalytics]);
 
   // Update event title
   const handleUpdateTitle = async () => {
@@ -239,7 +254,11 @@ export default function FullCalendarComponent({
   };
 
   // Handle time slot selection for quick event creation
-  const handleSelect = (selectInfo: any) => {
+  const handleSelect = (selectInfo: {
+    start: Date | string;
+    end: Date | string;
+    view: { calendar: { unselect: () => void } };
+  }) => {
     console.log('=== TIME SLOT SELECTION DEBUG ===');
     console.log('Raw selectInfo.start:', selectInfo.start);
     console.log('Raw selectInfo.end:', selectInfo.end);
@@ -543,7 +562,7 @@ export default function FullCalendarComponent({
     }
   };
 
-  const loadCalendarEvents = async (silent: boolean = false) => {
+  const loadCalendarEvents = useCallback(async (silent: boolean = false) => {
     // Only allow authenticated users to load calendar events
     if (!session?.user || status !== "authenticated") {
       if (!silent) {
@@ -652,14 +671,14 @@ export default function FullCalendarComponent({
         setIsLoading(false);
       }
     }
-  };
+  }, [session, status, toast, onEventsLoaded, calculateAnalytics]);
 
   // Load events only when user is authenticated
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
       loadCalendarEvents();
     }
-  }, [status, session?.user]);
+  }, [status, session?.user, loadCalendarEvents]);
 
   // Auto-refresh calendar data every minute
   useEffect(() => {
@@ -678,15 +697,15 @@ export default function FullCalendarComponent({
       console.log('Cleaning up auto-refresh interval');
       clearInterval(interval);
     };
-  }, [status, session?.user]);
+  }, [status, session?.user, loadCalendarEvents]);
 
   // Apply filters when filter values change
   useEffect(() => {
     console.log('Applying filters:', { filterTier, filterCategory, eventsCount: events.length });
     applyFilters();
-  }, [filterTier, filterCategory, events]);
+  }, [filterTier, filterCategory, events, applyFilters]);
 
-  const handleEventClick = (clickInfo: any) => {
+  const handleEventClick = (clickInfo: { event: { id: string } }) => {
     const event = events.find(e => e.id === clickInfo.event.id);
     if (event) {
       setSelectedEvent(event);

@@ -6,15 +6,24 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 // Add debugging utility
-function logError(context: string, error: any) {
+function logError(context: string, error: unknown) {
+  const err = error as { message?: string; code?: string; stack?: string };
   console.error(`[AUTH_ERROR] ${context}:`, {
-    message: error?.message,
-    code: error?.code,
-    stack: error?.stack?.slice(0, 200)
+    message: err?.message,
+    code: err?.code,
+    stack: err?.stack?.slice(0, 200)
   });
 }
 
-async function refreshAccessToken(token: any) {
+interface TokenType {
+  access_token?: string;
+  expires_at?: number;
+  refresh_token?: string;
+  error?: string;
+  provider?: string;
+}
+
+async function refreshAccessToken(token: TokenType) {
   try {
     const url = "https://oauth2.googleapis.com/token";
     
@@ -374,7 +383,7 @@ export const authOptions: NextAuthOptions = {
         return {
           ...token,
           id: user.id,
-          company: (user as any)?.company || "",
+          company: (user as { company?: string })?.company || "",
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
@@ -434,8 +443,9 @@ export const authOptions: NextAuthOptions = {
         session.user.email = (token.email as string) || undefined;
         session.user.name = (token.name as string) || undefined;
         session.user.image = (token.image as string) || undefined;
-        (session.user as any).company = token.company as string;
-        (session.user as any).provider = token.provider as string;
+        const extendedUser = session.user as { company?: string; provider?: string };
+        extendedUser.company = token.company as string;
+        extendedUser.provider = token.provider as string;
         session.accessToken = token.accessToken as string;
         console.log("Session created for user:", session.user.id, "with email:", session.user.email);
         console.log("Session accessToken set:", !!session.accessToken);

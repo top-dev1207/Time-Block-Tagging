@@ -14,7 +14,7 @@ export async function createAdminClient() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }: any) =>
+            cookiesToSet.forEach(({ name, value, options }: { name: string; value: string; options?: object }) =>
               cookieStore.set(name, value, options)
             );
           } catch {
