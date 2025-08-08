@@ -88,9 +88,9 @@ const UserDropdown = () => {
             <p className="text-xs leading-none text-muted-foreground">
               {session.user.email}
             </p>
-            {(session.user as any)?.company && (
+            {(session.user as { company?: string })?.company && (
               <p className="text-xs leading-none text-muted-foreground">
-                {(session.user as any).company}
+                {(session.user as { company?: string }).company}
               </p>
             )}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,20 @@ interface AuthTestResults {
   sessionExists: boolean;
   accessTokenExists: boolean;
   calendarApiWorking: boolean;
-  debugInfo?: any;
+  debugInfo?: {
+    hasSession: boolean;
+    sessionId?: string;
+    accessToken?: boolean;
+    user?: { email?: string };
+    provider?: string;
+    googleAccountInfo?: {
+      hasGoogleAccount?: boolean;
+      hasAccessToken?: boolean;
+      isTokenExpired?: boolean;
+      scope?: string;
+    };
+    [key: string]: unknown;
+  };
   error?: string;
 }
 
@@ -20,7 +33,7 @@ export default function CalendarAuthTest() {
   const [testResults, setTestResults] = useState<AuthTestResults | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const runAuthTest = async () => {
+  const runAuthTest = useCallback(async () => {
     setIsLoading(true);
     setTestResults(null);
 
@@ -73,7 +86,7 @@ export default function CalendarAuthTest() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [session]);
 
   const handleReauthorize = async () => {
     try {
@@ -92,7 +105,7 @@ export default function CalendarAuthTest() {
     if (status === "authenticated" && session?.user) {
       runAuthTest();
     }
-  }, [status, session?.user]);
+  }, [status, session?.user, runAuthTest]);
 
   if (status === "loading") {
     return (
@@ -189,7 +202,7 @@ export default function CalendarAuthTest() {
               <h4 className="font-medium text-gray-800">Debug Information:</h4>
               <div className="text-xs text-gray-600 mt-2 space-y-1">
                 <div>User: {testResults.debugInfo.user?.email}</div>
-                <div>Provider: {testResults.debugInfo.provider || 'Not set'}</div>
+                <div>Provider: {String(testResults.debugInfo.provider || 'Not set')}</div>
                 <div>Google Account: {testResults.debugInfo.googleAccountInfo?.hasGoogleAccount ? 'Found' : 'Not found'}</div>
                 <div>Token in DB: {testResults.debugInfo.googleAccountInfo?.hasAccessToken ? 'Yes' : 'No'}</div>
                 <div>Token Expired: {testResults.debugInfo.googleAccountInfo?.isTokenExpired ? 'Yes' : 'No'}</div>

@@ -58,13 +58,13 @@ export function AuthGuard({
 
     // Check role-based access if roles are specified
     if (session && allowedRoles.length > 0) {
-      const userRole = (session.user as any)?.role || "user";
+      const userRole = (session.user as { role?: string })?.role || "user";
       if (!allowedRoles.includes(userRole)) {
         router.push("/unauthorized");
         return;
       }
     }
-  }, [session, status, requireAuth, redirectTo, pathname, allowedRoles]); // Remove router from dependencies
+  }, [session, status, requireAuth, redirectTo, pathname, allowedRoles, router]);
 
   // Separate effect for updating auth state to prevent infinite loops
   useEffect(() => {
@@ -76,7 +76,7 @@ export function AuthGuard({
         name: session.user.name || "",
         email: session.user.email || "",
         image: session.user.image || "",
-        company: (session.user as any)?.company || "",
+        company: (session.user as { company?: string })?.company || "",
       });
     } else {
       clearUserRef.current();

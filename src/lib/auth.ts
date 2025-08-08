@@ -19,8 +19,14 @@ interface TokenType {
   access_token?: string;
   expires_at?: number;
   refresh_token?: string;
+  refreshToken?: string;
   error?: string;
   provider?: string;
+  email?: string;
+  id?: string;
+  accessToken?: string;
+  accessTokenExpires?: number;
+  [key: string]: any;
 }
 
 async function refreshAccessToken(token: TokenType) {

@@ -10,7 +10,8 @@
       "Bash(sed:*)",
       "Bash(grep:*)",
       "Bash(npm run build:*)",
-      "Bash(npx next lint:*)"
+      "Bash(npx next lint:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": []
   }

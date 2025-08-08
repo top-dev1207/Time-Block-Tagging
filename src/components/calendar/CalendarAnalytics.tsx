@@ -7,13 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  BarChart3, 
   TrendingUp, 
-  Clock, 
-  Calendar,
-  Download,
-  Filter,
-  ChevronRight
+  Download
 } from "lucide-react";
 import {
   BarChart,
@@ -40,8 +35,19 @@ interface AnalyticsData {
   highValueHours: number;
 }
 
+interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  extendedProps?: {
+    valueTier?: string;
+    category?: string;
+  };
+}
+
 interface CalendarAnalyticsProps {
-  events: any[];
+  events: CalendarEvent[];
   analytics: AnalyticsData;
 }
 
@@ -62,13 +68,26 @@ const categories = [
 ];
 
 export default function CalendarAnalytics({ events, analytics }: CalendarAnalyticsProps) {
-  const [weeklyData, setWeeklyData] = useState<any[]>([]);
-  const [monthlyTrend, setMonthlyTrend] = useState<any[]>([]);
+  const [weeklyData, setWeeklyData] = useState<Array<{
+    day: string;
+    high: number;
+    medium: number;
+    low: number;
+    admin: number;
+  }>>([]);
+  const [monthlyTrend, setMonthlyTrend] = useState<Array<{
+    month: string;
+    percentage: number;
+    highValue: number;
+    total: number;
+  }>>([]);
   const [selectedPeriod, setSelectedPeriod] = useState("week");
+
 
   useEffect(() => {
     calculateWeeklyAnalysis();
     calculateMonthlyTrend();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events]);
 
   const calculateWeeklyAnalysis = () => {
