@@ -15,9 +15,19 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Loader2, RefreshCw, Tag, Calendar as CalendarIcon, Shield, Plus, Edit, Trash2, Filter, Download, BarChart } from "lucide-react";
+import { Loader2, RefreshCw, Tag, Calendar as CalendarIcon, Shield, Plus, Edit, Trash2, Filter, Download, BarChart, Save, X, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -79,6 +89,9 @@ export default function FullCalendarComponent({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentView, setCurrentView] = useState('timeGridWeek');
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [filterTier, setFilterTier] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [analytics, setAnalytics] = useState({
@@ -161,6 +174,64 @@ export default function FullCalendarComponent({
 
     setFilteredEvents(filtered);
     calculateAnalytics(filtered);
+  };
+
+  // Update event title
+  const handleUpdateTitle = async () => {
+    if (!selectedEvent || !editedTitle.trim()) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/calendar/events/${selectedEvent.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: editedTitle.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update event title');
+      }
+
+      const { event: updatedEvent } = await response.json();
+      
+      // Update local state
+      const updateEventInList = (list: CalendarEvent[]) => 
+        list.map(e => e.id === selectedEvent.id 
+          ? { ...e, title: editedTitle.trim() }
+          : e
+        );
+      
+      setEvents(prev => updateEventInList(prev));
+      setFilteredEvents(prev => updateEventInList(prev));
+      setSelectedEvent(prev => prev ? { ...prev, title: editedTitle.trim() } : null);
+      
+      setIsEditingTitle(false);
+      
+      toast({
+        title: "Title Updated",
+        description: "The event title has been successfully updated.",
+      });
+      
+      // Refresh calendar view
+      if (calendarRef.current) {
+        const calendarApi = calendarRef.current.getApi();
+        calendarApi.refetchEvents();
+      }
+    } catch (error) {
+      console.error('Error updating event title:', error);
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update event title.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Create new event
@@ -253,10 +324,9 @@ export default function FullCalendarComponent({
   };
 
   // Delete event
-  const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm('Are you sure you want to delete this event?')) {
-      return;
-    }
+  const handleDeleteEvent = async () => {
+    const eventId = selectedEvent?.id;
+    if (!eventId) return;
 
     setIsLoading(true);
     try {
@@ -269,7 +339,10 @@ export default function FullCalendarComponent({
       }
 
       setEvents(prev => prev.filter(e => e.id !== eventId));
+      setFilteredEvents(prev => prev.filter(e => e.id !== eventId));
+      setShowDeleteConfirm(false);
       setIsDialogOpen(false);
+      setSelectedEvent(null);
       
       // Also delete the tag from database
       try {
@@ -524,7 +597,8 @@ export default function FullCalendarComponent({
   // Format events for FullCalendar with colors and category labels
   const calendarEvents = filteredEvents.map(event => {
     const category = categories.find(c => c.value === event.extendedProps?.category);
-    const categoryLabel = category ? `${category.value} • ` : "";
+    // Use special separator for better visual distinction
+    const categoryLabel = category ? `${category.value} │ ` : "";
     return {
       ...event,
       title: `${categoryLabel}${event.title}`,
@@ -797,14 +871,24 @@ export default function FullCalendarComponent({
               const tier = valueTiers.find(t => t.value === info.event.extendedProps?.valueTier);
               const category = categories.find(c => c.value === info.event.extendedProps?.category);
               
-              // Create enhanced tooltip
-              let tooltip = info.event.title;
+              // Create enhanced tooltip (without category prefix since it's in the title)
+              let tooltip = info.event.title.replace(/^[A-Z]{3} │ /, ''); // Remove category prefix for tooltip
               if (tier) tooltip += `\nValue Tier: ${tier.label}`;
               if (category) tooltip += `\nCategory: ${category.label}`;
               if (info.event.extendedProps.description) {
                 tooltip += `\nDescription: ${info.event.extendedProps.description}`;
               }
               info.el.title = tooltip;
+              
+              // Style the category part differently
+              const titleEl = info.el.querySelector('.fc-event-title');
+              if (titleEl && category) {
+                const titleText = titleEl.textContent || '';
+                const match = titleText.match(/^([A-Z]{3}) │ (.*)$/);
+                if (match) {
+                  titleEl.innerHTML = `<span style="opacity: 0.8; font-weight: 700; font-size: 0.85em;">${match[1]}</span> <span style="opacity: 0.6;">│</span> <span>${match[2]}</span>`;
+                }
+              }
             }}
           />
         </CardContent>
@@ -826,10 +910,61 @@ export default function FullCalendarComponent({
           {selectedEvent && (
             <div className="space-y-4">
               <div>
-                <Label>Event Title</Label>
-                <div className="p-2 bg-muted rounded text-sm">
-                  {selectedEvent.title}
-                </div>
+                <Label className="flex items-center justify-between">
+                  Event Title
+                  {!isEditingTitle && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditingTitle(true);
+                        setEditedTitle(selectedEvent.title.replace(/^[A-Z]{3} │ /, ''));
+                      }}
+                      className="h-6 px-2"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  )}
+                </Label>
+                {isEditingTitle ? (
+                  <div className="flex gap-2">
+                    <Input
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleUpdateTitle();
+                        if (e.key === 'Escape') {
+                          setIsEditingTitle(false);
+                          setEditedTitle('');
+                        }
+                      }}
+                      className="flex-1"
+                      autoFocus
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleUpdateTitle}
+                      disabled={isLoading || !editedTitle.trim()}
+                    >
+                      <Save className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditingTitle(false);
+                        setEditedTitle('');
+                      }}
+                      disabled={isLoading}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="p-2 bg-muted rounded text-sm">
+                    {selectedEvent.title}
+                  </div>
+                )}
               </div>
               
               {/* Display current tags */}
@@ -950,15 +1085,19 @@ export default function FullCalendarComponent({
 
               <div className="flex justify-between pt-4">
                 <Button
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={() => handleDeleteEvent(selectedEvent.id)}
+                  variant="destructive"
+                  onClick={() => setShowDeleteConfirm(true)}
                   disabled={isLoading}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Event
                 </Button>
                 <Button
-                  onClick={() => setIsDialogOpen(false)}
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    setIsEditingTitle(false);
+                    setEditedTitle('');
+                  }}
                 >
                   Close
                 </Button>
@@ -1122,6 +1261,36 @@ export default function FullCalendarComponent({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event
+              "{selectedEvent?.title}" from your Google Calendar.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEvent}
+              disabled={isLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>Delete Event</>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

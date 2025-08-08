@@ -300,6 +300,21 @@
   letter-spacing: 0.025em;
 }
 
+/* Category prefix styling */
+.fc-event-title::before {
+  content: attr(data-category);
+  display: inline-block;
+  padding: 0.05rem 0.25rem;
+  margin-right: 0.375rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}
+
 /* Enhance event visibility */
 .fc-event {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
