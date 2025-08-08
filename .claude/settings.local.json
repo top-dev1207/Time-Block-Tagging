@@ -3,7 +3,8 @@
     "allow": [
       "Bash(timeout 60s npm run build)",
       "Bash(npx tsc:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
