@@ -487,18 +487,23 @@ export default function FullCalendarComponent({
     }
   };
 
-  const loadCalendarEvents = async () => {
+  const loadCalendarEvents = async (silent: boolean = false) => {
     // Only allow authenticated users to load calendar events
     if (!session?.user || status !== "authenticated") {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to view your calendar events.",
-        variant: "destructive",
-      });
+      if (!silent) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to view your calendar events.",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
-    setIsLoading(true);
+    // Only show loading indicator for manual refreshes
+    if (!silent) {
+      setIsLoading(true);
+    }
     try {
       // Get events for current month using our API endpoint
       const startDate = new Date();
@@ -544,25 +549,52 @@ export default function FullCalendarComponent({
         return event;
       });
 
-      setEvents(transformedEvents);
-      setFilteredEvents(transformedEvents);
-      calculateAnalytics(transformedEvents);
-      onEventsLoaded?.(transformedEvents);
+      // Only update state if events have actually changed (for silent refreshes)
+      if (silent) {
+        const hasChanges = JSON.stringify(events.map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end }))) 
+                          !== JSON.stringify(transformedEvents.map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end })));
+        
+        if (hasChanges) {
+          setEvents(transformedEvents);
+          setFilteredEvents(transformedEvents);
+          calculateAnalytics(transformedEvents);
+          onEventsLoaded?.(transformedEvents);
+          console.log('Silent refresh: Calendar data updated');
+        } else {
+          console.log('Silent refresh: No changes detected');
+        }
+      } else {
+        // For manual refreshes, always update
+        setEvents(transformedEvents);
+        setFilteredEvents(transformedEvents);
+        calculateAnalytics(transformedEvents);
+        onEventsLoaded?.(transformedEvents);
+      }
       
-      toast({
-        title: "Calendar Synced",
-        description: `Successfully loaded ${transformedEvents.length} events from your Google Calendar.`,
-      });
+      // Only show success toast for manual refreshes
+      if (!silent) {
+        toast({
+          title: "Calendar Synced",
+          description: `Successfully loaded ${transformedEvents.length} events from your Google Calendar.`,
+        });
+      }
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
       console.error("Error loading calendar events:", err.message);
-      toast({
-        title: "Sync Failed",
-        description: err.message || "Failed to load calendar events. Please check your authentication and try again.",
-        variant: "destructive",
-      });
+      
+      // Only show error toast for manual refreshes
+      if (!silent) {
+        toast({
+          title: "Sync Failed",
+          description: err.message || "Failed to load calendar events. Please check your authentication and try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
-      setIsLoading(false);
+      // Only hide loading indicator for manual refreshes
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -571,6 +603,25 @@ export default function FullCalendarComponent({
     if (status === "authenticated" && session?.user) {
       loadCalendarEvents();
     }
+  }, [status, session?.user]);
+
+  // Auto-refresh calendar data every minute
+  useEffect(() => {
+    if (status !== "authenticated" || !session?.user) {
+      return;
+    }
+
+    console.log('Setting up auto-refresh interval (every 60 seconds)');
+    const interval = setInterval(() => {
+      console.log('Auto-refresh triggered');
+      loadCalendarEvents(true); // Silent refresh
+    }, 60000); // 60 seconds = 1 minute
+
+    // Cleanup interval on component unmount
+    return () => {
+      console.log('Cleaning up auto-refresh interval');
+      clearInterval(interval);
+    };
   }, [status, session?.user]);
 
   // Apply filters when filter values change
@@ -753,7 +804,7 @@ export default function FullCalendarComponent({
           </Button>
 
           <Button 
-            onClick={loadCalendarEvents} 
+            onClick={() => loadCalendarEvents(false)} 
             disabled={isLoading}
           >
             {isLoading ? (
@@ -959,7 +1010,6 @@ export default function FullCalendarComponent({
                   Event Title
                   {!isEditingTitle && (
                     <Button
-                      variant="ghost"
                       size="sm"
                       onClick={() => {
                         setIsEditingTitle(true);
@@ -995,7 +1045,6 @@ export default function FullCalendarComponent({
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
                       onClick={() => {
                         setIsEditingTitle(false);
                         setEditedTitle('');
@@ -1130,7 +1179,6 @@ export default function FullCalendarComponent({
 
               <div className="flex justify-between pt-4">
                 <Button
-                  variant="destructive"
                   onClick={() => setShowDeleteConfirm(true)}
                   disabled={isLoading}
                 >
@@ -1463,7 +1511,6 @@ export default function FullCalendarComponent({
 
             <div className="flex justify-between pt-4">
               <Button
-                variant="outline"
                 onClick={() => {
                   setIsQuickCreateOpen(false);
                   setSelectedTimeSlot(null);
