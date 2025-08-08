@@ -668,7 +668,8 @@ export default function FullCalendarComponent({
       console.log('Initial calendar data load triggered');
       loadCalendarEvents();
     }
-  }, [status, session?.user]); // Removed loadCalendarEvents from dependencies to prevent re-calls
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, session?.user]); // Intentionally exclude loadCalendarEvents to prevent re-calls
 
   // Apply filters when filter values change
   useEffect(() => {

@@ -13,7 +13,7 @@ const createTimeBlockSchema = z.object({
   category: z.string().min(1, "Category is required"),
 });
 
-const updateTimeBlockSchema = createTimeBlockSchema.partial();
+// Removed unused updateTimeBlockSchema
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const startTime = searchParams.get('startTime');
     const endTime = searchParams.get('endTime');
 
-    const whereClause: any = {
+    const whereClause: { userId: string; startTime?: { gte: Date; lte: Date } } = {
       userId: session.user.id
     };
 

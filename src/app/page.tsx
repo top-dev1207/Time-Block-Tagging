@@ -10,7 +10,7 @@ const HomePage = () => {
   useEffect(() => {
     // Redirect to login page - users need to authenticate first
     router.push('/login');
-  }, []); // Empty dependency array since we only want this to run once
+  }, [router]); // Include router to satisfy eslint
 
   // Show loading screen while redirecting
   return (

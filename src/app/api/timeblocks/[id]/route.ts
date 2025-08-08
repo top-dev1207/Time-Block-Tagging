@@ -103,7 +103,7 @@ export async function PUT(
       );
     }
 
-    const updateData: any = {};
+    const updateData: { title?: string; description?: string; startTime?: Date; endTime?: Date; valueTier?: number; category?: string } = {};
     const { title, description, startTime, endTime, valueTier, category } = validation.data;
 
     if (title !== undefined) updateData.title = title;

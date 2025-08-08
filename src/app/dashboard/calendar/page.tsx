@@ -3,9 +3,7 @@
 import { useState } from "react";
 import FullCalendarComponent from "@/components/calendar/FullCalendarComponent";
 import CalendarAnalytics from "@/components/calendar/CalendarAnalytics";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar, BarChart3, TrendingUp, Clock } from "lucide-react";
+// Removed unused imports
 import { useSession } from "next-auth/react";
 
 
@@ -13,7 +11,7 @@ import { useSession } from "next-auth/react";
 
 const CalendarView = () => {
   const { data: session } = useSession();
-  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<Array<{ id: string; title: string; start: string; end: string }>>([]);
   const [calendarAnalytics, setCalendarAnalytics] = useState({
     totalEvents: 0,
     highValueEvents: 0,

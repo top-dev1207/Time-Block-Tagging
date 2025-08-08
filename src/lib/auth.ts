@@ -26,7 +26,7 @@ interface TokenType {
   id?: string;
   accessToken?: string;
   accessTokenExpires?: number;
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }
 
 async function refreshAccessToken(token: TokenType) {

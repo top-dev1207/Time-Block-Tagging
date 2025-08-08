@@ -23,12 +23,6 @@ const VerifyEmailForm = () => {
   const token = searchParams.get("token");
   const email = searchParams.get("email");
 
-  useEffect(() => {
-    if (token) {
-      handleVerification(token);
-    }
-  }, [token]);
-
   const handleVerification = async (verificationToken: string) => {
     setIsVerifying(true);
     
@@ -42,32 +36,47 @@ const VerifyEmailForm = () => {
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         setIsVerified(true);
+        setIsError(false);
         toast({
-          title: "Email Verified! ✅",
-          description: "Your account has been successfully verified. You can now sign in.",
+          title: "Email Verified Successfully",
+          description: "Your email has been verified. You can now sign in.",
         });
+        // Redirect to login after verification
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
       } else {
         setIsError(true);
+        setIsVerified(false);
         toast({
           title: "Verification Failed",
-          description: data.error || "Invalid or expired verification link.",
+          description: data.error || "Failed to verify email. Please try again.",
           variant: "destructive",
         });
       }
-    } catch {
+    } catch (error) {
+      console.error("Error verifying email:", error);
       setIsError(true);
+      setIsVerified(false);
       toast({
-        title: "Verification Error",
-        description: "Failed to verify email. Please try again.",
+        title: "Verification Failed",
+        description: "An error occurred while verifying your email.",
         variant: "destructive",
       });
     } finally {
       setIsVerifying(false);
     }
   };
+
+  useEffect(() => {
+    if (token) {
+      handleVerification(token);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // handleVerification is defined above, but we exclude it to avoid circular dependency
 
   const handleResendVerification = async () => {
     if (!email) {

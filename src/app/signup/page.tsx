@@ -50,7 +50,7 @@ const SignupPage = () => {
     validateField(field, formData[field as keyof typeof formData]);
   };
 
-  const validateField = (field: string, value: any) => {
+  const validateField = (field: string, value: string) => {
     let error = "";
     
     switch (field) {

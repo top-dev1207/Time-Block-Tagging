@@ -33,7 +33,7 @@ const ResetPasswordForm = () => {
       });
       router.push("/forgot-password");
     }
-  }, [token, toast]); // Remove router from dependencies
+  }, [token, toast, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
