@@ -1,7 +1,7 @@
 import { useRef, useCallback } from 'react';
 
 // Custom hook for debouncing function calls
-export function useDebounce<T extends (...args: any[]) => void>(
+export function useDebounce<T extends (...args: never[]) => void>(
   func: T,
   delay: number
 ): T {
@@ -24,7 +24,7 @@ export function useDebounce<T extends (...args: any[]) => void>(
 }
 
 // Custom hook for throttling function calls
-export function useThrottle<T extends (...args: any[]) => void>(
+export function useThrottle<T extends (...args: never[]) => void>(
   func: T,
   delay: number
 ): T {

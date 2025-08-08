@@ -7,7 +7,6 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { GoogleCalendarAPI } from "@/lib/google-calendar";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Loader2, RefreshCw, Tag, Calendar as CalendarIcon, Shield, Plus, Edit, Trash2, Filter, Download, BarChart, Save, X, Pencil } from "lucide-react";
+import { Loader2, RefreshCw, Tag, Calendar as CalendarIcon, Plus, Trash2, Filter, Download, Save, X, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -102,8 +101,7 @@ export default function FullCalendarComponent({
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [currentView, setCurrentView] = useState('timeGridWeek');
+  // Removed unused state variables
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -605,7 +603,14 @@ export default function FullCalendarComponent({
       console.log('Loaded tags from database:', savedTags);
 
       // Transform Google Calendar events to FullCalendar format
-      const transformedEvents: CalendarEvent[] = data.events.map((gEvent: any) => {
+      const transformedEvents: CalendarEvent[] = data.events.map((gEvent: {
+        id: string;
+        summary?: string;
+        start: { dateTime?: string; date?: string };
+        end: { dateTime?: string; date?: string };
+        description?: string;
+        location?: string;
+      }) => {
         const savedTag = savedTags[gEvent.id];
         const event = {
           id: gEvent.id,
@@ -671,7 +676,7 @@ export default function FullCalendarComponent({
         setIsLoading(false);
       }
     }
-  }, [session, status, toast, onEventsLoaded, calculateAnalytics]);
+  }, [session, status, toast, onEventsLoaded, calculateAnalytics, events]);
 
   // Load events only when user is authenticated
   useEffect(() => {
