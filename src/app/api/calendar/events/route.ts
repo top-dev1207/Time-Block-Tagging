@@ -91,9 +91,9 @@ export async function POST(request: NextRequest) {
     const { calendarId = 'primary', ...eventData } = body;
 
     // Validate required fields
-    if (!eventData.title || !eventData.startTime || !eventData.endTime) {
+    if (!eventData.summary || !eventData.startTime || !eventData.endTime) {
       return NextResponse.json(
-        { error: "Missing required fields: title, startTime, endTime" },
+        { error: "Missing required fields: summary, startTime, endTime" },
         { status: 400 }
       );
     }

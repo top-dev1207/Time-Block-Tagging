@@ -407,11 +407,12 @@ export default function FullCalendarComponent({
 
       // Load saved tags from database
       const savedTags = await loadEventTags();
+      console.log('Loaded tags from database:', savedTags);
 
       // Transform Google Calendar events to FullCalendar format
       const transformedEvents: CalendarEvent[] = data.events.map((gEvent: any) => {
         const savedTag = savedTags[gEvent.id];
-        return {
+        const event = {
           id: gEvent.id,
           title: gEvent.summary || 'Untitled Event',
           start: gEvent.start.dateTime || gEvent.start.date || '',
@@ -424,6 +425,8 @@ export default function FullCalendarComponent({
             category: savedTag?.category || "MTG", // Use saved category or default
           }
         };
+        console.log(`Event ${gEvent.id}: tier=${event.extendedProps.valueTier}, category=${event.extendedProps.category}`);
+        return event;
       });
 
       setEvents(transformedEvents);
@@ -457,6 +460,7 @@ export default function FullCalendarComponent({
 
   // Apply filters when filter values change
   useEffect(() => {
+    console.log('Applying filters:', { filterTier, filterCategory, eventsCount: events.length });
     applyFilters();
   }, [filterTier, filterCategory, events]);
 
@@ -513,7 +517,9 @@ export default function FullCalendarComponent({
   const getEventColor = (event: CalendarEvent) => {
     const tier = event.extendedProps?.valueTier;
     const tierInfo = valueTiers.find(t => t.value === tier);
-    return tierInfo?.bgColor || "#6b7280";
+    const color = tierInfo?.bgColor || "#6b7280";
+    console.log(`Event ${event.id} tier: ${tier}, color: ${color}`);
+    return color;
   };
 
   // Format events for FullCalendar with colors
@@ -872,9 +878,9 @@ export default function FullCalendarComponent({
                     {categories.map(category => (
                       <SelectItem key={category.value} value={category.value}>
                         <div className="flex items-center space-x-2">
-                          <Badge className={`text-xs ${category.color}`}>
+                          <div className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${category.color}`}>
                             {category.value}
-                          </Badge>
+                          </div>
                           <span>{category.label}</span>
                         </div>
                       </SelectItem>
@@ -1025,9 +1031,9 @@ export default function FullCalendarComponent({
                   {categories.map(category => (
                     <SelectItem key={category.value} value={category.value}>
                       <div className="flex items-center space-x-2">
-                        <Badge className={`text-xs ${category.color}`}>
+                        <div className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${category.color}`}>
                           {category.value}
-                        </Badge>
+                        </div>
                         <span>{category.label}</span>
                       </div>
                     </SelectItem>

@@ -32,7 +32,8 @@ interface CalendarListResponse {
 }
 
 export interface CreateEventData {
-  title: string;
+  title?: string;
+  summary?: string;
   description?: string;
   startTime: Date;
   endTime: Date;
@@ -155,7 +156,7 @@ export class GoogleCalendarAPI {
     const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`;
     
     const event = {
-      summary: eventData.title,
+      summary: eventData.summary || eventData.title,
       description: eventData.description,
       start: {
         dateTime: eventData.startTime.toISOString(),
