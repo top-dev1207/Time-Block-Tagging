@@ -1,4 +1,5 @@
 import { NextAuthOptions } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import AzureADProvider from "next-auth/providers/azure-ad";
@@ -29,7 +30,7 @@ interface TokenType {
   [key: string]: string | number | boolean | undefined | null | unknown;
 }
 
-async function refreshAccessToken(token: TokenType) {
+async function refreshAccessToken(token: TokenType): Promise<JWT> {
   try {
     const url = "https://oauth2.googleapis.com/token";
     
@@ -54,10 +55,12 @@ async function refreshAccessToken(token: TokenType) {
 
     const newToken = {
       ...token,
+      sub: String(token.sub || token.id || 'unknown'), // Ensure sub is present
+      id: String(token.id || token.sub || 'unknown'), // Ensure id is present
       accessToken: refreshedTokens.access_token,
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
-    };
+    } as unknown as JWT;
 
     // Update the database with the new token
     try {
@@ -90,8 +93,10 @@ async function refreshAccessToken(token: TokenType) {
     console.error("Error refreshing access token:", error);
     return {
       ...token,
+      sub: String(token.sub || token.id || 'unknown'), // Ensure sub is present even in error case
+      id: String(token.id || token.sub || 'unknown'), // Ensure id is present even in error case
       error: "RefreshAccessTokenError",
-    };
+    } as unknown as JWT;
   }
 }
 
@@ -314,7 +319,7 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account }): Promise<JWT> {
       console.log("NextAuth JWT callback:", { 
         hasAccount: !!account, 
         hasUser: !!user, 
@@ -341,59 +346,66 @@ export const authOptions: NextAuthOptions = {
               console.log("Found database user for Google OAuth:", dbUser.id);
               return {
                 ...token,
-                id: dbUser.id,
+                sub: String(dbUser.id),
+                id: String(dbUser.id),
                 email: dbUser.email,
                 name: dbUser.name,
-                image: dbUser.image,
+                picture: dbUser.image,
                 company: dbUser.company || "",
                 provider: "google",
                 accessToken: account.access_token,
                 refreshToken: account.refresh_token,
                 accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
-              };
+              } as unknown as JWT;
             } else {
               console.error("Database user not found for Google OAuth:", user.email);
               // Fallback to user object data
               return {
                 ...token,
-                id: user.id,
+                sub: String(user.id || 'unknown'),
+                id: String(user.id || 'unknown'),
                 email: user.email,
                 name: user.name,
-                image: user.image,
+                picture: user.image,
                 company: "",
                 provider: "google",
                 accessToken: account.access_token,
                 refreshToken: account.refresh_token,
                 accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
-              };
+              } as unknown as JWT;
             }
           } catch (error) {
             logError("JWT callback database lookup", error);
             // Fallback to user object data
             return {
               ...token,
-              id: user.id,
+              sub: String(user.id || 'unknown'),
+              id: String(user.id || 'unknown'),
               email: user.email,
               name: user.name,
-              image: user.image,
+              picture: user.image,
               company: "",
               provider: "google",
               accessToken: account.access_token,
               refreshToken: account.refresh_token,
               accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
-            };
+            } as unknown as JWT;
           }
         }
 
         // Default token creation for other providers
         return {
           ...token,
-          id: user.id,
+          sub: String(user.id || 'unknown'),
+          id: String(user.id || 'unknown'),
+          email: user.email,
+          name: user.name,
+          picture: user.image,
           company: (user as { company?: string })?.company || "",
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
-        };
+        } as unknown as JWT;
       }
 
       // If we don't have an access token in the token, try to get it from database
@@ -426,15 +438,31 @@ export const authOptions: NextAuthOptions = {
 
       // Return previous token if the access token has not expired yet
       if (token.accessTokenExpires && Date.now() < (token.accessTokenExpires as number)) {
-        return token;
+        // Ensure id is present
+        return {
+          ...token,
+          sub: String(token.sub || token.id || 'unknown'),
+          id: String(token.id || token.sub || 'unknown')
+        } as unknown as JWT;
       }
 
       // Access token has expired, try to update it
       if (token.refreshToken) {
-        return await refreshAccessToken(token);
+        const refreshedToken = await refreshAccessToken(token);
+        // Ensure id is present in refreshed token
+        return {
+          ...refreshedToken,
+          sub: String(refreshedToken.sub || refreshedToken.id || token.sub || token.id || 'unknown'),
+          id: String(refreshedToken.id || token.id || token.sub || 'unknown')
+        } as unknown as JWT;
       }
       
-      return token;
+      // Ensure id is present in fallback
+      return {
+        ...token,
+        sub: token.sub || token.id || 'unknown',
+        id: token.id || token.sub || 'unknown'
+      } as unknown as JWT;
     },
     async session({ session, token }) {
       console.log("NextAuth session callback:", { 
