@@ -240,17 +240,54 @@ export default function FullCalendarComponent({
 
   // Handle time slot selection for quick event creation
   const handleSelect = (selectInfo: any) => {
+    console.log('=== TIME SLOT SELECTION DEBUG ===');
+    console.log('Raw selectInfo.start:', selectInfo.start);
+    console.log('Raw selectInfo.end:', selectInfo.end);
+    console.log('Start type:', typeof selectInfo.start);
+    console.log('End type:', typeof selectInfo.end);
+    
+    // Convert to Date objects if they're not already
     const start = new Date(selectInfo.start);
     const end = new Date(selectInfo.end);
     
-    // Store selected time slot
+    console.log('Converted start Date:', start);
+    console.log('Converted end Date:', end);
+    console.log('Start ISO:', start.toISOString());
+    console.log('End ISO:', end.toISOString());
+    console.log('Start local string:', start.toString());
+    console.log('End local string:', end.toString());
+    
+    // Store selected time slot (these will be used for display in dialog)
     setSelectedTimeSlot({ start, end });
     
-    // Pre-fill the new event with selected times
-    const startDate = start.toISOString().split('T')[0];
-    const startTime = start.toTimeString().split(' ')[0].substring(0, 5);
-    const endDate = end.toISOString().split('T')[0];
-    const endTime = end.toTimeString().split(' ')[0].substring(0, 5);
+    // Format for form inputs - using simple local time extraction
+    const startDate = start.toISOString().split('T')[0]; // YYYY-MM-DD
+    const startTime = start.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+    const endDate = end.toISOString().split('T')[0]; // YYYY-MM-DD  
+    const endTime = end.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+    
+    console.log('Form values:');
+    console.log('  startDate:', startDate);
+    console.log('  startTime:', startTime);
+    console.log('  endDate:', endDate);
+    console.log('  endTime:', endTime);
+    
+    // Test AM/PM display format
+    const startAMPM = start.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit', 
+      hour12: true 
+    });
+    const endAMPM = end.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit', 
+      hour12: true 
+    });
+    
+    console.log('Display format (AM/PM):');
+    console.log('  start:', startAMPM);
+    console.log('  end:', endAMPM);
+    console.log('=================================');
     
     setNewEvent({
       title: '',
@@ -903,7 +940,7 @@ export default function FullCalendarComponent({
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="timeGridWeek"
             locale="en-GB"
-            timeZone="Europe/London"
+            timeZone="local"
             firstDay={1}
             headerToolbar={{
               left: 'prev,next Today',
@@ -935,14 +972,14 @@ export default function FullCalendarComponent({
               return `${weekday} ${day}/${month}`;
             }}
             slotLabelFormat={{
-              hour: '2-digit',
+              hour: 'numeric',
               minute: '2-digit',
-              hour12: false
+              hour12: true
             }}
             eventTimeFormat={{
-              hour: '2-digit',
+              hour: 'numeric',
               minute: '2-digit',
-              hour12: false
+              hour12: true
             }}
             events={calendarEvents}
             eventClick={handleEventClick}
@@ -950,8 +987,8 @@ export default function FullCalendarComponent({
             selectMirror={true}
             select={handleSelect}
             height="auto"
-            slotMinTime="06:00:00"
-            slotMaxTime="22:00:00"
+            slotMinTime="00:00:00"
+            slotMaxTime="24:00:00"
             allDaySlot={true}
             nowIndicator={true}
             eventDisplay="block"
@@ -1379,14 +1416,14 @@ export default function FullCalendarComponent({
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric'
-                  })} • {selectedTimeSlot.start.toLocaleTimeString('en-GB', {
-                    hour: '2-digit',
+                  })} • {selectedTimeSlot.start.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
                     minute: '2-digit',
-                    hour12: false
-                  })} - {selectedTimeSlot.end.toLocaleTimeString('en-GB', {
-                    hour: '2-digit',
+                    hour12: true
+                  })} - {selectedTimeSlot.end.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
                     minute: '2-digit',
-                    hour12: false
+                    hour12: true
                   })}
                 </div>
               </div>

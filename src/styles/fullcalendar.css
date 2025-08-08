@@ -79,9 +79,9 @@
   font-weight: 600;
 }
 
-/* Time slots */
+/* Time slots - reduced height for 24 hour view */
 .fc-timegrid-slot {
-  height: 2rem;
+  height: 1.5rem;
   border-color: hsl(var(--border));
 }
 
@@ -397,10 +397,19 @@
   justify-content: flex-start;
 }
 
-/* Time format - 24 hour */
+/* Time format - 12 hour AM/PM */
 .fc-timegrid-axis-cushion,
 .fc-event-time {
   font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+}
+
+/* 24 hour view adjustments already handled above */
+
+/* Make axis labels more compact for 24 hour view */
+.fc-timegrid-axis-cushion {
+  font-size: 0.7rem;
+  padding: 0 0.25rem;
 }
 
 /* Week starts on Monday (already set in component, but reinforced here) */
