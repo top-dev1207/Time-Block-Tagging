@@ -260,17 +260,36 @@ export default function FullCalendarComponent({
     // Store selected time slot (these will be used for display in dialog)
     setSelectedTimeSlot({ start, end });
     
-    // Format for form inputs - using simple local time extraction
-    const startDate = start.toISOString().split('T')[0]; // YYYY-MM-DD
-    const startTime = start.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
-    const endDate = end.toISOString().split('T')[0]; // YYYY-MM-DD  
-    const endTime = end.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+    // Format for form inputs - using local date methods to avoid UTC conversion
+    const formatLocalDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
     
-    console.log('Form values:');
-    console.log('  startDate:', startDate);
-    console.log('  startTime:', startTime);
-    console.log('  endDate:', endDate);
-    console.log('  endTime:', endTime);
+    const formatLocalTime = (date: Date) => {
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    };
+    
+    const startDate = formatLocalDate(start); // YYYY-MM-DD (local)
+    const startTime = formatLocalTime(start); // HH:MM (local)
+    const endDate = formatLocalDate(end); // YYYY-MM-DD (local)  
+    const endTime = formatLocalTime(end); // HH:MM (local)
+    
+    console.log('Form values (LOCAL):');
+    console.log('  startDate:', startDate, '(local date)');
+    console.log('  startTime:', startTime, '(local time)');
+    console.log('  endDate:', endDate, '(local date)');
+    console.log('  endTime:', endTime, '(local time)');
+    
+    // Compare with ISO values to show the difference
+    console.log('Comparison with ISO (UTC):');
+    console.log('  ISO startDate:', start.toISOString().split('T')[0]);
+    console.log('  ISO endDate:', end.toISOString().split('T')[0]);
+    console.log('  Date difference detected:', startDate !== start.toISOString().split('T')[0]);
     
     // Test AM/PM display format
     const startAMPM = start.toLocaleTimeString('en-US', { 
