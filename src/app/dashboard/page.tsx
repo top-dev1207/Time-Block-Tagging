@@ -73,16 +73,20 @@ const roiMetrics = [
 ];
 
 const DashboardOverview = () => {
-  const customTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
+  const customTooltip = (props: any) => {
+    const { active, payload, label } = props;
     if (active && payload && payload.length) {
-      return (
-        <div className="bg-background border rounded-lg p-3 shadow-lg">
-          <p className="font-medium">{label}</p>
-          <p className="text-sm text-muted-foreground">
-            {`${payload[0].value}% (${Math.round((payload[0].value / 100) * 40)} hours)`}
-          </p>
-        </div>
-      );
+      const value = payload[0]?.value;
+      if (typeof value === 'number') {
+        return (
+          <div className="bg-background border rounded-lg p-3 shadow-lg">
+            <p className="font-medium">{label}</p>
+            <p className="text-sm text-muted-foreground">
+              {`${value}% (${Math.round((value / 100) * 40)} hours)`}
+            </p>
+          </div>
+        );
+      }
     }
     return null;
   };

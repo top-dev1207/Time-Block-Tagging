@@ -22,11 +22,11 @@ interface TokenType {
   refreshToken?: string;
   error?: string;
   provider?: string;
-  email?: string;
+  email?: string | null;
   id?: string;
   accessToken?: string;
   accessTokenExpires?: number;
-  [key: string]: string | number | boolean | undefined;
+  [key: string]: string | number | boolean | undefined | null | unknown;
 }
 
 async function refreshAccessToken(token: TokenType) {
@@ -42,7 +42,7 @@ async function refreshAccessToken(token: TokenType) {
         client_id: process.env.GOOGLE_CLIENT_ID!,
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
         grant_type: "refresh_token",
-        refresh_token: token.refreshToken,
+        refresh_token: token.refreshToken || "",
       }),
     });
 

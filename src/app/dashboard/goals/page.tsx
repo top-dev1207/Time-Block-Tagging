@@ -73,7 +73,8 @@ const roiMetrics = [
 ];
 
 const DashboardOverview = () => {
-  const customTooltip = ({ active, payload, label }: any) => {
+  const customTooltip = (props: any) => {
+    const { active, payload, label } = props;
     if (active && payload && payload.length) {
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">

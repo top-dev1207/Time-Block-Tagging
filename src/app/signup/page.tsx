@@ -41,13 +41,13 @@ const SignupPage = () => {
     }
     // Validate on change for touched fields
     if (fieldTouched[field]) {
-      validateField(field, value);
+      validateField(field, String(value));
     }
   };
 
   const handleBlur = (field: string) => {
     setFieldTouched(prev => ({ ...prev, [field]: true }));
-    validateField(field, formData[field as keyof typeof formData]);
+    validateField(field, String(formData[field as keyof typeof formData]));
   };
 
   const validateField = (field: string, value: string) => {
