@@ -43,8 +43,8 @@ interface CalendarEvent {
 }
 
 const valueTiers = [
-  { value: "10000", label: "£10K - Transformational", color: "bg-purple-500", bgColor: "#a855f7" },
-  { value: "1000", label: "£1K - High-leverage", color: "bg-primary", bgColor: "#102C46" },
+  { value: "10000", label: "£10K - Transformational", color: "bg-purple-500", bgColor: "#9333ea" },
+  { value: "1000", label: "£1K - High-leverage", color: "bg-blue-600", bgColor: "#2563eb" },
   { value: "100", label: "£100 - Operational", color: "bg-green-500", bgColor: "#22c55e" },
   { value: "10", label: "£10 - Admin", color: "bg-orange-500", bgColor: "#f97316" }
 ];
@@ -515,21 +515,25 @@ export default function FullCalendarComponent({
   };
 
   const getEventColor = (event: CalendarEvent) => {
-    const tier = event.extendedProps?.valueTier;
-    const tierInfo = valueTiers.find(t => t.value === tier);
+    const tier = event.extendedProps?.valueTier || "100";
+    const tierInfo = valueTiers.find(t => t.value === String(tier));
     const color = tierInfo?.bgColor || "#6b7280";
-    console.log(`Event ${event.id} tier: ${tier}, color: ${color}`);
     return color;
   };
 
-  // Format events for FullCalendar with colors
-  const calendarEvents = filteredEvents.map(event => ({
-    ...event,
-    backgroundColor: getEventColor(event),
-    borderColor: getEventColor(event),
-    textColor: "white",
-    classNames: [`event-tier-${event.extendedProps?.valueTier || "100"}`],
-  }));
+  // Format events for FullCalendar with colors and category labels
+  const calendarEvents = filteredEvents.map(event => {
+    const category = categories.find(c => c.value === event.extendedProps?.category);
+    const categoryLabel = category ? ` [${category.value}]` : "";
+    return {
+      ...event,
+      title: `${event.title}${categoryLabel}`,
+      backgroundColor: getEventColor(event),
+      borderColor: getEventColor(event),
+      textColor: "white",
+      classNames: [`event-tier-${event.extendedProps?.valueTier || "100"}`, `event-category-${event.extendedProps?.category || "MTG"}`],
+    };
+  });
 
   // Show loading state
   if (status === "loading") {
@@ -789,8 +793,28 @@ export default function FullCalendarComponent({
               endTime: '18:00',
             }}
             eventDidMount={(info) => {
-              // Add custom styling or tooltips here if needed
-              info.el.title = info.event.title + (info.event.extendedProps.description ? '\n' + info.event.extendedProps.description : '');
+              // Add custom styling and enhanced tooltips
+              const tier = valueTiers.find(t => t.value === info.event.extendedProps?.valueTier);
+              const category = categories.find(c => c.value === info.event.extendedProps?.category);
+              
+              // Create enhanced tooltip
+              let tooltip = info.event.title;
+              if (tier) tooltip += `\nValue Tier: ${tier.label}`;
+              if (category) tooltip += `\nCategory: ${category.label}`;
+              if (info.event.extendedProps.description) {
+                tooltip += `\nDescription: ${info.event.extendedProps.description}`;
+              }
+              info.el.title = tooltip;
+              
+              // Add category badge to event element
+              if (category && info.el.querySelector('.fc-event-title')) {
+                const titleEl = info.el.querySelector('.fc-event-title');
+                const badge = document.createElement('span');
+                badge.className = 'ml-1 px-1 py-0.5 text-xs font-semibold rounded';
+                badge.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                badge.textContent = category.value;
+                titleEl?.appendChild(badge);
+              }
             }}
           />
         </CardContent>
@@ -816,6 +840,26 @@ export default function FullCalendarComponent({
                 <div className="p-2 bg-muted rounded text-sm">
                   {selectedEvent.title}
                 </div>
+              </div>
+              
+              {/* Display current tags */}
+              <div className="flex gap-2">
+                {selectedEvent.extendedProps?.valueTier && (
+                  <div className="flex items-center gap-1">
+                    <div 
+                      className="w-3 h-3 rounded"
+                      style={{ backgroundColor: valueTiers.find(t => t.value === selectedEvent.extendedProps?.valueTier)?.bgColor || '#6b7280' }}
+                    />
+                    <span className="text-sm font-medium">
+                      {valueTiers.find(t => t.value === selectedEvent.extendedProps?.valueTier)?.label || 'Not Tagged'}
+                    </span>
+                  </div>
+                )}
+                {selectedEvent.extendedProps?.category && (
+                  <Badge variant="outline" className="text-xs">
+                    {categories.find(c => c.value === selectedEvent.extendedProps?.category)?.label || selectedEvent.extendedProps?.category}
+                  </Badge>
+                )}
               </div>
               
               {selectedEvent.description && (
@@ -845,7 +889,20 @@ export default function FullCalendarComponent({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue>
+                      {(() => {
+                        const tier = valueTiers.find(t => t.value === (selectedEvent.extendedProps?.valueTier || "100"));
+                        return tier ? (
+                          <div className="flex items-center space-x-2">
+                            <div 
+                              className="w-3 h-3 rounded"
+                              style={{ backgroundColor: tier.bgColor }}
+                            />
+                            <span>{tier.label}</span>
+                          </div>
+                        ) : null;
+                      })()}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {valueTiers.map(tier => (
@@ -872,7 +929,19 @@ export default function FullCalendarComponent({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue>
+                      {(() => {
+                        const cat = categories.find(c => c.value === (selectedEvent.extendedProps?.category || "MTG"));
+                        return cat ? (
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline" className="text-xs">
+                              {cat.value}
+                            </Badge>
+                            <span>{cat.label}</span>
+                          </div>
+                        ) : null;
+                      })()}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(category => (

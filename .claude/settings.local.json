@@ -5,7 +5,8 @@
       "Bash(npx tsc:*)",
       "Bash(taskkill:*)",
       "Bash(git commit:*)",
-      "Bash(timeout 30s npx prisma generate)"
+      "Bash(timeout 30s npx prisma generate)",
+      "Bash(npm run dev:*)"
     ],
     "deny": []
   }
