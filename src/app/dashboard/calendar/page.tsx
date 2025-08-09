@@ -3,7 +3,7 @@
 import { useState } from "react";
 import FullCalendarComponent from "@/components/calendar/FullCalendarComponent";
 import CalendarAnalytics from "@/components/calendar/CalendarAnalytics";
-// Removed unused imports
+import CalendarConnectionStatus from "@/components/calendar/CalendarConnectionStatus";
 import { useSession } from "next-auth/react";
 
 
@@ -41,6 +41,8 @@ const CalendarView = () => {
         )}
       </div>
 
+      {/* Calendar Connection Status */}
+      <CalendarConnectionStatus />
 
       {/* FullCalendar Component */}
       <FullCalendarComponent 

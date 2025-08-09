@@ -648,9 +648,21 @@ export default function FullCalendarComponent({
       
       // Only show error toast for manual refreshes
       if (!silent) {
+        let errorMessage = err.message || "Failed to load calendar events";
+        let errorTitle = "Sync Failed";
+        
+        // Handle specific error cases
+        if (err.message?.includes("No Google Calendar access token")) {
+          errorTitle = "Google Calendar Not Connected";
+          errorMessage = "Please connect your Google Calendar to view events.";
+        } else if (err.message?.includes("Authentication required")) {
+          errorTitle = "Authentication Required";
+          errorMessage = "Please sign in to access calendar events.";
+        }
+        
         toast({
-          title: "Sync Failed",
-          description: err.message || "Failed to load calendar events. Please check your authentication and try again.",
+          title: errorTitle,
+          description: errorMessage,
           variant: "destructive",
         });
       }

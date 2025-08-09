@@ -452,6 +452,8 @@ const LoginForm = () => {
                   <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
                     Sign up
                   </Link>
+                  <div className="text-center text-sm text-gray-600 text-[20px]">Hi, Colin</div>
+                  <div className="text-center text-sm text-gray-600 text-[20px]">WhatsApp: +447973186712</div>
                 </div>
               </CardContent>
             </Card>
