@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Clock, ArrowLeft, TrendingUp, Target, BarChart3, Timer, Award } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Clock, ArrowLeft, TrendingUp, Target, BarChart3, Timer, Award, ExternalLink, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -21,6 +22,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -32,6 +34,8 @@ const LoginForm = () => {
 
   useEffect(() => {
     setMounted(true);
+    // Show dialog on page load
+    setShowDialog(true);
   }, []);
   
   // Redirect if already authenticated
@@ -460,6 +464,67 @@ const LoginForm = () => {
           </motion.div>
         </div>
       </div>
+      
+      {/* Important Message Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <MessageCircle className="h-6 w-6" />
+              Important Message
+            </DialogTitle>
+            <DialogDescription>
+              Message from Kyrylo
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="text-gray-700 leading-relaxed space-y-3">
+              <p>Hi Colin,</p>
+              
+              <p>I hope you&apos;re doing well.</p>
+              
+              <p>I wanted to let you know that my Upwork account has been unexpectedly blocked. While I can&apos;t be certain, I suspect it may have been flagged after your message about me &quot;not seeming from Ukraine,&quot; though there could be other reasons. I take full responsibility and am trying to restore it, but this can be very difficult.</p>
+              
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="font-semibold text-green-800">Google Calendar integration has been successfully implemented in the current project. Please check it out.</p>
+                <a 
+                  href="https://time-block-tagging.vercel.app" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 mt-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  https://time-block-tagging.vercel.app
+                </a>
+              </div>
+              
+              <p>I truly value the progress and trust we&apos;ve built. If my account can&apos;t be recovered, I&apos;m happy to continue working with you outside Upwork to complete your project to the same high standard. If you&apos;d prefer not to, I will understand - but I would be grateful if you allowed me to finish what we started.</p>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="font-semibold text-blue-800">Here is my WhatsApp number. Please contact me there.</p>
+                <a 
+                  href="https://wa.me/380914817360" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 font-mono text-lg mt-2"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  +380 91 481 7360
+                </a>
+              </div>
+              
+              <p>Thank you,<br />Kyrylo</p>
+            </div>
+            
+            <div className="flex justify-end pt-4">
+              <Button onClick={() => setShowDialog(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
