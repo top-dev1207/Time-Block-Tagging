@@ -697,6 +697,106 @@ export default function FullCalendarComponent({
     }
   };
 
+  const handleEventDrop = async (dropInfo: { event: { id: string; start: Date | null; end: Date | null }; revert: () => void }) => {
+    const { event } = dropInfo;
+    if (!event.start || !event.end) {
+      toast({
+        title: "Invalid Event Times",
+        description: "Event must have both start and end times.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/calendar/events/${event.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          start: event.start.toISOString(),
+          end: event.end.toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update event');
+      }
+
+      // Update local state
+      setEvents(prev => prev.map(e => 
+        e.id === event.id 
+          ? { ...e, start: event.start!.toISOString(), end: event.end!.toISOString() }
+          : e
+      ));
+
+      toast({
+        title: "Event Updated",
+        description: "Event time has been successfully updated in Google Calendar.",
+      });
+    } catch (error) {
+      console.error('Error updating event:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update event in Google Calendar.",
+        variant: "destructive",
+      });
+      // Revert the change
+      dropInfo.revert();
+    }
+  };
+
+  const handleEventResize = async (resizeInfo: { event: { id: string; start: Date | null; end: Date | null }; revert: () => void }) => {
+    const { event } = resizeInfo;
+    if (!event.start || !event.end) {
+      toast({
+        title: "Invalid Event Times",
+        description: "Event must have both start and end times.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/calendar/events/${event.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          start: event.start.toISOString(),
+          end: event.end.toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update event');
+      }
+
+      // Update local state
+      setEvents(prev => prev.map(e => 
+        e.id === event.id 
+          ? { ...e, start: event.start!.toISOString(), end: event.end!.toISOString() }
+          : e
+      ));
+
+      toast({
+        title: "Event Updated",
+        description: "Event duration has been successfully updated in Google Calendar.",
+      });
+    } catch (error) {
+      console.error('Error updating event:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update event in Google Calendar.",
+        variant: "destructive",
+      });
+      // Revert the change
+      resizeInfo.revert();
+    }
+  };
+
   const handleEventUpdate = async (eventId: string, updates: { valueTier?: string; category?: string }) => {
     // Update local state immediately for better UX
     setEvents(prev => prev.map(event => 
@@ -1008,6 +1108,12 @@ export default function FullCalendarComponent({
             selectable={true}
             selectMirror={true}
             select={handleSelect}
+            editable={true}
+            eventResizableFromStart={true}
+            eventDurationEditable={true}
+            eventStartEditable={true}
+            eventDrop={handleEventDrop}
+            eventResize={handleEventResize}
             height="auto"
             slotMinTime="00:00:00"
             slotMaxTime="24:00:00"

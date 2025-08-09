@@ -73,6 +73,75 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { eventId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const accessToken = (session as any)?.accessToken;
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "No Google Calendar access token found. Please sign in with Google." },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { start, end, calendarId = 'primary' } = body;
+    const eventId = params.eventId;
+
+    if (!start || !end) {
+      return NextResponse.json(
+        { error: "Start and end times are required" },
+        { status: 400 }
+      );
+    }
+
+    const calendar = new GoogleCalendarAPI(accessToken);
+    
+    console.log(`Updating event times for ${eventId}: ${start} to ${end}`);
+
+    try {
+      const updatedEvent = await calendar.updateEvent(calendarId, eventId, {
+        startTime: new Date(start),
+        endTime: new Date(end)
+      });
+      
+      return NextResponse.json({
+        success: true,
+        event: updatedEvent
+      });
+    } catch (updateError) {
+      console.error("Event time update error:", updateError);
+      throw updateError;
+    }
+
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error("Calendar event PATCH error:", {
+      message: err.message,
+      stack: err.stack
+    });
+
+    return NextResponse.json(
+      { 
+        error: "Failed to update event times",
+        details: err.message 
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { eventId: string } }

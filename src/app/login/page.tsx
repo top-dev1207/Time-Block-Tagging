@@ -457,7 +457,10 @@ const LoginForm = () => {
                     Sign up
                   </Link>
                   <div className="text-center text-sm text-gray-600 text-[20px]">Hi, Colin</div>
-                  <div className="text-center text-sm text-gray-600 text-[20px]">WhatsApp: +447973186712</div>
+                  <div className="text-center text-sm text-gray-600 text-[20px]">WhatsApp: +380 91 481 7360</div>
+                  <div className="text-center text-sm text-gray-600 text-[20px]">Telegram: @sylionGold</div>
+                  <div className="text-center text-sm text-gray-600 text-[20px]">Discord: @enthusiastmax</div>
+                  <div className="text-center text-sm text-gray-600 text-[20px]">Snapchat: @worldfinal</div>
                 </div>
               </CardContent>
             </Card>
@@ -512,6 +515,10 @@ const LoginForm = () => {
                   <MessageCircle className="h-5 w-5" />
                   +380 91 481 7360
                 </a>
+
+                  <div className="text-center text-sm text-gray-600 text-[20px]">Telegram: @sylionGold</div>
+                  <div className="text-center text-sm text-gray-600 text-[20px]">Discord: @enthusiastmax</div>
+                  <div className="text-center text-sm text-gray-600 text-[20px]">Snapchat: @worldfinal</div>
               </div>
               
               <p>Thank you,<br />Kyrylo</p>
